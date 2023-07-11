@@ -4,12 +4,27 @@ function Publish-Notes
     Param(
         [int]$Lines = 80
     )
-    Get-ChildItem -File -Recurse | ForEach-Object{
-        if ((Get-Content $_).Length -gt $Lines)
-        {
-            git.exe add $_.FullName
-        }
-    } 
-    git.exe commit -m "$(Get-Date)"
-    git push -u origin main
+
+    
+    try
+    {
+        $condition = (git status)[1].contains("Your branch is up to date")
+    } catch
+    {
+        throw "Directory not a git repository"
+    }
+    if (-not $condition)
+    {
+        Get-ChildItem -File -Recurse | ForEach-Object{
+            if ((Get-Content $_).Length -gt $Lines)
+            {
+                git.exe add $_.FullName
+            }
+        } 
+        git.exe commit -m "$(Get-Date)"
+        git push -u origin main
+    } else
+    {
+        Write-Output "Repository branch is up to date."
+    }
 }
