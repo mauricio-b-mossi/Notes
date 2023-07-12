@@ -263,7 +263,7 @@ application{
 }
 ```
 
-And now run the command `.\gradlew run` and you should get the beautify:
+And now run the command `.\gradlew run` and you should get the beautifull:
 ``` 
 > Task :run
 Hello from main
