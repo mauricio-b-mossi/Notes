@@ -6,7 +6,13 @@ PowerShell, I'm back to React would you guess. The aim of this is to get everyon
 who left React in early 2022, to be proficient once again. I will summarize the main 
 points, for me, in the docs, and add links to each section. 
 
-Something to remember: In JSX we use `{}` to write JavaScript within the UI Markup. 
+### React and Compose
+This section touches on some unexpected behavior you might encounter as a Compose or React dev,
+programming for React or Compose respectively. Both platforms are pretty similar. But they have 
+some things that might throw you off at first. 
+
+#### Lambdas and Callbacks in React and Compose
+In JSX we use `{}` to write JavaScript within the UI Markup. 
 This might lead to move confusion for Kotlin, Jetpack Compose devs.
 ```javascript
 // Way to do it.
@@ -35,6 +41,28 @@ Button(onClick=println("Did Something")){
 
 Which is not the intended behavior. Because for callbacks you pass function instances.
 You do not pass the result of the function, that would be dumb.
+
+#### Default Event Propagation Behavior
+
+Another important fact is that unlike Compose, in React, default event handlers are propagated. To further illustrate,
+if I have a button on top of another button in Compose, and Tap the one above, only the `onClick()` callback of the top button 
+would be called.
+```kotlin
+// Compose
+Box{
+    Button(onClick={Log.d("Event", "Bottom Clicked")}){...}
+    Button(onClick={Log.d("Event", "Top Clicked")}){...} // Only Top Clicked would be Logged.
+}
+```
+```html
+// React
+<span>
+    <div onClick={() => console.log("Bottom Clicked")}></div> // Logged
+    <div onClick={() => console.log("Top Clicked")}></div> // Logged
+</span>
+```
+To avoid this behavior you need to access the event parameter in JavaScript and call the `stopPropagation()` to as the name 
+implies, stop the propagation of the event.
 
 ### Basics
 #### Keypoints:
@@ -242,3 +270,46 @@ what this lambda syntax does is queue the lambda.
 > This `setState` queue causes some interesting behavior to be aware of. As a rule of thumb,
 > when within a block, the state is changed multiple times, all the state changes are added to a
 > queue, which executes / is evaluated after the block finishes execution.
+
+- Do not mutate state, this in between several reasons, seen [here](https://react.dev/learn/updating-objects-in-state#why-is-mutating-state-not-recommended-in-react),
+is mainly for speed, since react checks whether state is change by comparing objects : `prevObj === currOb`; and if you 
+mutate state the reference to the instance remains the same. This also applies for arrays as both are references to objects. 
+You can use spread operator to perform a shallow copy of the current state and only change the properties you wish.
+```javascript
+const [person, setPerson] = useState({
+        name : "Mauricio",
+        age : 20
+    })
+
+function clickHandler(){
+        setPerson({
+            ...person, // Shallow copies person
+            age : 21 // override age, by delaring it after.
+            })
+    }
+```
+
+> One thing to remember, unlike Kotlin, when inside a lambda the return value is not inferred. Therefore, 
+when using a block within a lambda you must explicitly return, else the return can be infrared.
+```javascript
+const list = [1,2,3,4,5]
+const listInline = list.map((el) => el * 3) // 3, 6, 9, 12, 15
+const listBlock = list.map((el) => {el * 3}) // undefined, undefined, undefined, undefined, undefined
+```
+Another thing to remember, when using `map()` with indexed, the index is the second parameter, not the first one.
+```javascript
+const list = [1,2,3,4,5] 
+const iList = list.map((e, i) => e * i)
+```
+```kotlin
+  val list = List(5){it * 2}
+    val iList = list.mapIndexed{ index, el ->
+        index * el
+    }
+```
+And finally, map in JavaScript passes an object, while map in Kotlin passes a pair of parameter for 
+mapped index, one for the index and another for the element.
+
+### Managing State
+- Try to state hoist, React is similar to Compose, or more correctly, Compose is similar to React, if the 
+`setState` function is called with the same value as `state`, the state does not change and no re-render occurs.
