@@ -13,8 +13,7 @@ function Publish-Notes
     {
         throw "Directory not a git repository"
     }
-    if (-not $condition)
-    {
+
         Get-ChildItem -File -Recurse | ForEach-Object{
             if ((Get-Content $_).Length -gt $Lines)
             {
@@ -23,8 +22,5 @@ function Publish-Notes
         } 
         git.exe commit -m "$(Get-Date)"
         git push -u origin main
-    } else
-    {
-        Write-Output "Repository branch is up to date."
-    }
+
 }
