@@ -1,13 +1,21 @@
+***Tue 07/11/2023*** 
+
+Use [mdn web docs](https://developer.mozilla.org/en-US/docs/Web/JavaScript) as your
+guide for everything JavaScript.
+___
 ### Up to Speed with JavaScript
 Here is mostly everything you need to know before hopping back into the weird 
 world of JavaScript. Some of the common issues encountered by developers while 
-using JavaScript is related to its internals. The language is quite simple, with its 
-fair share of oddities. But to understand JavaScript well you need to be aware of 
-the event loop. JavaScript is a single threaded, asynchronous programming language.
-This at first might appear strange,  how can a language be both asynchronous and 
-single threaded? This was my main confusion coming from languages like Java and Kotlin
+using JavaScript its not JavaScript itself, but its runtime. The language is quite simple, with its 
+fair share of oddities. But the runtime is more complex, it allows JavaScript perform 
+asynchronous operation with the help of Web APIs or the system kernel. 
+JavaScript the language cannot do this as it is a single threaded, synchronous programming language.
+
+So the question is how can JavaScript run asynchronous code if it is single threaded? The 
+answer is that it can't. It needs to rely on the runtime for concurrency, more specifically the event loop.
+
+This was my main confusion coming from languages like Java and Kotlin
 where the one could handle asynchronous code with threads and coroutines respectively.
-Here is where the importance of the event loop comes in.
 
 > Note, the event loop is not JavaScript per se, rather it is a feature of the JavaScript's runtime.
 
@@ -17,6 +25,7 @@ remember that variables holding instances of objects hold the reference to the o
 Therefore, when the instance is passed as an argument, the value of the reference of the 
 instance is passed. This allows to modify the instance form the function.
 - Not everything is an object, contains primitives: `string` , `number` , `bigint` , `boolean` , `symbol` , `null` and `undefined`
+- Just like Kotlin, functions are first class citizens: can be passed around.
 
 ### Event Loop
 As mentioned above, JavaScript is single threaded and asynchronous, and it achieves this 
@@ -113,11 +122,76 @@ setTimeout(() => button.style.backgroundColor = "white", 0) // Adding to queue
 setTimeout(() => button.style.backgroundColor = "blue", 0) // Adding to queue
 ```
 
+#### Server
+No need to summarize, [Node.js](https://nodejs.org/en/docs/guides/event-loop-timers-and-nexttick#what-is-the-event-loop)
+states it perfectly. 
+> The event loop is what allows Node.js to perform non-blocking I/O operations - despite 
+> the fact that JavaScript is single-threaded - by offloading operations to the ***system kernel***  
+> whenever possible.
+>
+> Since most modern kernels are multi-threaded, they can handle multiple operations
+> executing in the background. When one of these operations completes, the kernel
+> tells Node.js so that the appropriate callback may be added to the [poll] queue to 
+> eventually be executed.
 
+> TLDR Node.js since it does not have access to Web APIs to perform asynchronous code
+> delegates asynchronous code to the system kernel which once finished adds the callback
+> to the queue.
 
+#### Ending Example
+This example is the reason it all started. I though I new JavaScript decently well after using it to build
+scripts, frontends, backends, mobile apps, but I was wrong. I never truly understood it, therefore this code 
+snippet tripped me up.
 
+```javascript
+async function handleClick() {
+    setPending(pending + 1);
+    await delay(3000);
+    setPending(pending => pending - 1);
+    setCompleted(completed => completed + 1);
+}
 
+function delay(ms) {
+  return new Promise(resolve => {
+    setTimeout(resolve, ms);
+  });
+}
+```
 
+The reason it tripped me up is that I did not understand how this caused the state
+in React to update, and then after the `setTimeout` to re-update. I though React
+batched code blocks (which it does). I did not know what to expect, but I defenelty did not expect
+the code to update pending and after x amount of time decrease pending and increase 
+completed.  
 
+So the question... how does this code works, first we have to remember the Event Loop.
+In this case, when the button is clicked, the browser pushed the `onClick` callback to the queue.
+The event loop, when the call stack is empty goes to the queue, and pushes the `onClick` callback to the call stack
+to execute. It executes the code sequentially, it even enters the Promise, as the promise 
+is run synchronously, but once it reaches the `setTimeout` is delegates the timeout to the Web APIs. The code 
+beneath the `await delay(3000)` is not called because the `await` waits for the execution to finish, or put 
+simply queues a callback, to call the rest of the funciton when delay is fulfilled. Basically this:
+```javascript
+async function handleClick() {
+    setPending(pending + 1);
+    await delay(3000);
+    setPending(pending => pending - 1);
+    setCompleted(completed => completed + 1);
+}
+```
+Can be seen as this:
+```javascript
+async function handleClick() {
+    setPending(pending + 1);
+    delay(3000).then(() => {
+        setPending(pending => pending - 1);
+        setCompleted(completed => completed + 1);
+    })
+}
+```
+The handleClick block finishes, a callback is set for the completion of delay, the render loop is called, the `setTimeout` is fulfilled,
+it sets the `then()` callback in the queue, when the call stack is empty, it runs the queue entry and updates state.
 
-
+> One important thing to remember is that the Promise is ran ***synchronously***,  
+> but the callback (then, code after await) is called when the promise is settled and the callstack is empty.
+> This callback is always done asynchronously.
