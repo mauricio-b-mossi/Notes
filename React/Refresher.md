@@ -584,3 +584,4 @@ export default function App(){
 }
 ```
 
+> This keeps the components clean and uncluttered, focused on what they display reather than where they get the data from.
