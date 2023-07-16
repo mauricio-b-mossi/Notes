@@ -1,7 +1,7 @@
 ### Interfaces
 
-Interfaces describe the concept of a type. It is a prototype fro all classes that implement the interface.
-It describes what a class should do, by not hwo it should do it.
+Interfaces describe the concept of a type. It is a prototype fore all classes that implement the interface.
+It describes what a class should do, by not how it should do it.
 
 - All classes can implement interfaces, including enums.
 
@@ -39,7 +39,7 @@ fishSwimmer.swim()
 
 ### Abstract Classes
 
-An abstract class is like an ordinary class except one or moere functions or properties is
+An abstract class is like an ordinary class except one or more functions or properties is
 incomplete: a function lacks a definition or a property is declared without initialization.
 <mark>An interface is like an abstract class but without state.</mark>
 

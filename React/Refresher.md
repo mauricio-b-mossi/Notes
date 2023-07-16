@@ -1,4 +1,3 @@
-**Sun 07/09/2023** 
 ## React Refresher 
 It kind of sucks, in 2021 I used to be a React god, but after going through a Data 
 Analysis with Python, Android Development with Kotlin, and some sysadmin with 
@@ -10,6 +9,109 @@ points, for me, in the docs, and add links to each section.
 This section touches on some unexpected behavior you might encounter as a Compose or React dev,
 programming for React or Compose respectively. Both platforms are pretty similar. But they have 
 some things that might throw you off at first. 
+
+#### Similarities between React and Compose from a high-level.
+- React was first, Compose was second. Both are UI libraries for building applications. They are reactive, in 
+the sense that both track state, and respond to changes in state. When state changes, those Composables in the 
+case of Jetpack Compose, and those Components in the case of React, recompose / re render.
+
+- For React, event though you use JSX you are basically using three: JavaScript, HTML, CSS. However, CSS is optional as you can use 
+CSS in JavaScript, but at the end they are just strings, same with libraries like TailwindCSS. What I find incredible
+about Jetpack Compose is that everything is in one language: Kotlin. The styling, markup and logic all are done in Kotlin.
+
+- What is interesting about styling in Jetpack Compose, for those familiar with React, is Tailwind-like like: the styles
+are defined in-line with the use of `Modifiers`.
+
+Due to the similarities between UI libraries, both share similar concepts in terms of state management:
+`useState` and `rememeber{mutableStateOf()}`, `useEffect` and `LaunchEffect`, `useMemo` and `derivedStateOf`.
+
+#### Preserving State, Rendering, and Recomposition.
+React and Compose both have behaviors for persisting state. However, they WIDELY differ.
+- ***In React, state is held by the postion on the UI tree.*** 
+- ***In Compose, state is held by the call site: the position in source*** 
+
+##### React: Persists State by position in UI tree.
+To illustrate, in this case:
+```javascript
+function App() {
+  const [toggle, setToggle] = useState(false)
+  return (
+    <div className="flex flex-col justify-center items-center h-screen bg-red-200">
+      <div className="flex justify-between w-96">
+        {toggle ? <div><Counter/></div> : <div><Counter/></div>}
+        <Counter/>
+      </div>
+      <button className="bg-green-500 py-2 px-4 rounded-xl text-white" onClick={() => setToggle(e => !e)}>Toggle</button>
+      {toggle && <div>Toggled</div>}
+    </div>
+  );
+}
+
+export default App
+
+function Counter(){
+  const [counter, setCounter] = useState(0)
+
+  return(
+    <div>
+      <p>The count is {counter}</p>
+      <button className="bg-blue-500 py-1 px-2 rounded-xl text-white text-xs" onClick={() => setCounter(e => e + 1)}>Up the count</button>
+    </div>
+  )
+}
+```
+In React, the Counter within the conditional `{condition ? <Comp/> : <Comp/>}` will persist even though it is toggled. This is because, the position 
+of the `<Counter/>` in the UI tree remains the same.
+
+##### Compose: Persists State by call-site : position in source code.
+To illustrate, in this case:
+```kotlin
+@Composable
+fun TestingCompose() {
+    Column(
+        Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        var toggle by remember { mutableStateOf(false) }
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            if (toggle) {
+                Counter()
+            } else {
+                Counter()
+            }
+            Counter()
+        }
+        Button(onClick = { toggle = !toggle }) {
+            Text(text = "Toggle")
+        }
+    }
+}
+
+@Composable
+fun Counter() {
+    var count by remember {
+        mutableStateOf(0)
+    }
+    Column {
+        Text(text = "The count is $count")
+        Button(onClick = { count += 1 }) {
+            Text(text = "Up the count.")
+        }
+    }
+}
+```
+In Compose, the Counter within the conditional `if else` will **NOT**  persist
+as the call site changes.
+
+###### TLDR in React position within the UI tree is what persists state.
+###### TLDR in Compose position in source code is what persists state.
+
+> In my opinion preserving state in Compose is simpler, just by call-site. In React you need to make sure the position in the UI
+> remains exacly the same, and Nodes are both Components `<../>` or JSX expressions `{}`.
 
 #### Lambdas and Callbacks in React and Compose
 In JSX we use `{}` to write JavaScript within the UI Markup. 
@@ -313,3 +415,172 @@ mapped index, one for the index and another for the element.
 ### Managing State
 - Try to state hoist, React is similar to Compose, or more correctly, Compose is similar to React, if the 
 `setState` function is called with the same value as `state`, the state does not change and no re-render occurs.
+- Your UI should react to state. You can test the multiple states of your Component using
+“living styleguides” or “storybooks”. These are pages where you display your component with all possible 
+states.
+
+#### Preserving and resetting state
+This is a super important section. In React, state is persisted by the position of a component in the UI Tree, this is 
+in contrast to compose where state is persisted based on the call-site of a Composable. What does this entail for react?
+That you can do things like this:
+```
+{isToggled ? <Counter color={"red"}/> : <Counter color={"blue"}/>}
+```
+and even though the color changes, the local counter state, assuming there is one, will be preserved.
+As the state is set on a `<Counter/>` at postion X in the UI Tree and even though the color changes,
+it is still a `<Counter/>` at position X.
+
+Note that a UI Node is represented either by an expression `{}` or a Component. Also not that
+the position must be explicitly the same: `div > Counter` != `Fragment > Counter`.
+However, a `<Counter/>`  is the same if `div > Counter` == `div > Counter + p`. The UI Node is not 
+the same, yet, the position of the `<Counter/>` in the UI Tree is the same.
+
+#### useReducer
+useReducer is not fundamental to compose, however it is a nice addition that might help de clutter you 
+Component. Use reducer acts like some-what similarly to the `reduce()`, it transforms input into one 
+output. The use case of the `useReducer` hook is to be handle state and its handling separate from the Component.
+You do so by exposing dispatches. Dispatchers represent an action like send, load, error, and according to those actions 
+the reducer returns state.
+```
+const [state, dispatch] = useReducer(reducer, initialState)
+
+// The state represents the current state, while the action represents the action object coming in via the dispatcher function called form the UI.
+function reducer(state, action){
+    // type is a convention used, most often it is a string representing the action.
+    switch(action.type)
+        case "send": {... return newState}
+        case "error": {... return newState}
+        case "loading": {... return newState}
+        default: {throw Error}
+}
+```
+It very closely resembles the ViewModel in terms of Jetpack Compose. You cannot change state directly, rather you call a dispatcher with an event type,
+similar to the `onEvent` function used on Android ViewModels. Then the action is handled based on the type. The difference is that Kotlin provides type
+safety as you can represent actions as an typed object and check the type of action by the objects type. Usually sealed classed are used for this 
+in Kotlin.
+```javascript
+import { useReducer } from "react";
+
+function App() {
+  const [counter, dispatch] = useReducer(counterReducer, 0)
+  return (
+    <div className="flex flex-col justify-center items-center h-screen bg-red-200">
+      <div>The count is {counter}</div>
+      <div className="flex">
+        <button onClick={() => dispatch({type : "+"})}>+</button>
+        <button onClick={() => dispatch({type : "-"})}>-</button>
+      </div>
+    </div>
+  );
+}
+
+export default App
+
+
+function counterReducer(counter, action){
+    switch(action.type){
+        case "+":{
+            console.log(`Counter increased to ${counter + 1}`)
+            return counter + 1
+        }
+        case "-" : {
+            console.log(`Counter decrased to ${counter - 1}`)
+            return counter - 1
+        }
+    }
+}
+```
+
+#### Context, Context.Provider, createContext, and useContext.
+Context is useful when you want to hold global information. Instead of prop drilling, you can provide a Context which  
+is available to all child Components. Context is inherited, kind of like CSS, where the nearest context represents the 
+current context. Even though it might appear tempting to use Context, think on whether you really need it. 
+> As a rule of thumb, always pass JSX as children.
+To use context you need to:
+1. Create the Context.
+2. Provide the Context.
+3. Retrieve the Context.
+To create the context use the `createContext` function from react. Here you declare the reference to the Context and its
+initial value.
+```javascript
+import {createContext} from 'react'
+const initialValue = 0
+const MyContext = useContext(0)
+```
+The you provide the Context. The current context is provided to all its children, if its not overridden.
+```javascript
+import MyContext from './MyContext.js'
+
+export default App(){
+    const [state, setState] = useState(0)
+    // If value is not overridden, the default value will be used.
+    <MyContext.Provider value={state}>
+        <Child/>
+    </MyContext.Provider>
+}
+```
+To retrieve the Context in a child Component, import the `useContext` hook, and specify which context you want. 
+```javascript
+import {useContext} from 'react'
+import MyContext from './MyContext.js'
+export default Child(){
+    // Using MyContext.  
+    const context = useContext(MyContext)
+    return(
+        ...
+    )
+}
+```
+
+#### Combining Context and Reducer
+Combining Context and Reducer can yield wonderful results. Most of the times this is used if you have some state hoisted
+at the top sections of the UI tree, which is accessed by lower UI nodes. The most common solution to the issue above is prop drilling, 
+where you pass the state and the callback to access state and modify state. But depending on the problem, Context and 
+Reducer might simplify your problem. 
+
+Things to remember:
+- Hooks can only be called form the top level of Components.
+- If you store objects or arrays in state, they must act as if immutable.
+- Custom hooks are functions that start with `use` and allow us to access hooks "outside" a component.
+
+There are several ways we could combine `useReducer` and `useContext`, which depend on your case. However, this implementation, 
+is pretty clean, which reminds me to a ViewModel:
+```javascript
+// TasksProvider.js
+import {useReducer, createContext} from 'react'
+
+export default TasksContext = createContext(null)
+export default TasksDispatcherContext = createContext(null)
+
+// A Component as only in the top level of Components and Custom Hooks you can access Hooks.
+export default TaskProvider({children}){
+    const [tasks, dispatcher] = useReducer(taskReducer, initialTasks) 
+
+    return(
+       <TasksContext.Provider value={tasks}> 
+        <TasksDispatcherContext.Provider value={dispatcher}>
+            {children}
+        </TasksDispatcherContext.Provider>
+       </TasksContext.Provider> 
+    )
+}
+
+function taskReducer(tasks, action){
+    switch(action.type){
+        case <expression>:
+            return {...}
+    }
+}
+
+// App.js
+import TaskProvider from './TasksProvider.js'
+
+export default function App(){
+    return(
+        <TasksProvider>
+            <...>
+        </TasksProvider>
+    )
+}
+```
+
