@@ -87,7 +87,8 @@ There are several ways to prototypes to an object.
 - `new`: The constructor invocation of a function add everything in the `prototype` of a as the nearest prototype.
 - `Object.setPrototypeOf()`: Sets the prototype of an object.
 - `Object.create()`: Creates an object with its prototype set to the argument.
-- Object.assign(): Assigns an object to a property of an Object.
+- `Object.assign()`: Assigns an object to a property of an Object.
+- `extends`: New syntax added, syntactic sugar to give the illsion of classical inheritance.
 
 > Remember, the prototypal chain continues until a prototype points to `null`.
 
