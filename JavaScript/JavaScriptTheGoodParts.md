@@ -92,6 +92,9 @@ There are several ways to prototypes to an object.
 
 > Remember, the prototypal chain continues until a prototype points to `null`.
 
+> The `prototype` prototype is only available in ***Constructor Functions*** and ***Classes***. Where all functions
+> are Constructor Functions.
+
 ### Exceptions
 Exceptions follow the same `try`, `catch`, form. When you `throw` an Exception, you can and should 
 provide an object, this object can be accessed in the catch block as its parameter.
