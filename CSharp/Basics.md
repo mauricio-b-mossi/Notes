@@ -40,8 +40,8 @@ class Person
 }
 ```
 
-### Predifined Types
-Predifined types are types that are specially supported by the compiler (primitive types):
+### Predefined Types
+Predefined types are types that are specially supported by the compiler (primitive types):
 - int
 - string
 - bool
@@ -80,8 +80,8 @@ int fifteenX = 0xF;
 double fifteenE = 1.5E01;
 ```
 
-The arithmetic operators (+, -, *, /, %) are defined for all numberic types except the 
-8 and 16 bit intergral types. Therefore, if you perform an operaton on these types, 
+The arithmetic operators (+, -, *, /, %) are defined for all numeric types except the 
+8 and 16 bit integral types. Therefore, if you perform an operation on these types, 
 they are automatically cast to the lowest possible type: int32.
 ```cs
 byte one = 1;
@@ -91,7 +91,7 @@ int three = one + two; // Do this.
 byte three = (byte)(one + two); // Or This.
 ```
 
-Floating point types have values taht certain operations treat specially. These are `NaN`, 
+Floating point types have values that certain operations treat specially. These are `NaN`, 
 `+\infty`, `-\infty`, as well as other values (MaxValue, MinValue, and Epsilon).
 > When using `==` a NaN value is never equal to another. To test use `float.IsNaN` or `double.IsNaN`.
 
@@ -107,10 +107,10 @@ The type of an arrays is declared as `type[]`. There are several ways to declare
 The main ones are:
 - `type[] name = new type[size];`
 - `type[] name = {};`
-The former, is called array initializaiton expression where the size of the array is the 
+The former, is called array initialization expression where the size of the array is the 
 number of elements declared within the `{}`.
 
-> Creating an array always preinitializes the elements with default values. If the element
+> Creating an array always preinitialises the elements with default values. If the element
 > is a reference type, it is initialized to zero, if it is a value type, it is initialized to 
 > the bitwise zeroing of memory.
 
@@ -623,3 +623,379 @@ class Person{
     ~Person(){...}
 }
 ```
+This syntax is short hand for `Object.Finalize` method.
+
+### Partial Classes
+Partial types allow type definitions to be split - accross multiple files, the same file, etc. The split type has 
+access to everything in the type. This allows the class to be augmented from different parts.
+```cs
+Person me = new Person(){Name = "Mauricio", Age = 21};
+public partial class Person{public string Name{get;set;}}
+public partial class Person{public int Age{get;set;}}
+```
+As basically evrything is merged into one class. You cannot have conflicting members. Unless 
+one of the members is a partial method. Think of partial methods as loose abstract methods.
+If used, they need to be implemented, else the compiler throws the parial method away to avoid bloat.
+```cs
+public partial class Person
+{
+    public string Name { get; set; }
+    public partial void Introduce(); // Definition.
+}
+public partial class Person
+{
+    public int Age { get; set; }
+    public partial void Introduce() => Console.WriteLine($"Hello my name is {Name} and I'm {Age} years old."); // Implementation.
+}
+```
+
+### Inheritance
+Upcasting never fails, downcasting is a bit tricky. To downcast, you can use `(Type)a` or `a as Type`.
+The difference is that `as` if the downcast is not possible returns null, while the other throws an 
+InvalidCastExeption.
+```cs
+A a = new A();
+Letter l = a;
+l.Pronounciation;        // Error
+()(A)l).Pronounciation;  // "aaa"
+(l as A).Pronounciation; // "aaa"
+
+public class Letter{}
+public class A : Letter{public string Pronounciation{get;} = "aaa"}
+```
+
+`is` tests whether a variable matches a pattern, where a type name follows the is keyword. Unlike Kotlin, 
+no automatic downcast is made by the compiler. However, you can introduce a pattern variable to 
+achieve similar behavior.
+```cs
+// --- Pattern ---
+if(l is A){
+    (l as A).Pronounciation; // "aaa"
+}
+
+// --- Pattern With Pattern Variable ---
+if(l is A a){
+    a.Pronounciation;        // "aaa"
+}
+```
+The pattern variable is available for immediate consumption as seen in `switch`. It also remains 
+in the outside scope so it can be used elsewhere.
+```cs
+if(a is Stock s && s.Price > 1000){...}
+s.Tic                        // msft
+```
+To better understand the pattern variable is equivalent to this:
+```cs
+A a;
+if(l is A a){
+    a = (A)l;
+}
+```
+
+### Virtual Members and Override
+Methods, properties, indexers, and events can all be declared `virtual`. Anything marked 
+with `virtual` can be overridden by subclasses using the `override` keyword.
+```cs
+public class Person { public virtual string Greet() => "Hello"; }
+public class Mauricio : Person
+{
+    public string Name { get; } = "Mauricio";
+    public override string Greet() => $"Hello my name is {Name}";
+}
+```
+
+### Covariant return types
+With virtual methods, you can return a more derived class than the virtual methods signature 
+because this does not break the contract: The derived class is still the class:
+```cs
+public class Animal{public virtual Animal Reproduce => new Animal();}
+public class Dog : Animal{public override Dog Reproduce => new Dog();}
+```
+In the example above, a Dog is still an Animal.
+> Remember: invariant List<Number> !> List<Int>; covariant List<Number> > List<Int>; contravariant List<Int> > List<Number>
+
+### Hiding Inherited Members
+What we would call overriding in Java is Hiding members in C#. We saw the `override` and `virtual` 
+keywords above. To sum it up, `virtual` basically tells the programmer that the member can be overriden
+with the `override` keyword. Unlike `abstract` members, `virtual` members provide a default 
+implementation. 
+
+Hiding a member usually happens by accident so the compiler throws a warning. To remove the warning
+you add the `new` keyword after the access modifier, therefore indicating your intent to the compiler.
+```cs
+public class A{public void Spell => Console.WriteLine("Aaai");}
+public class B : A{public new void Spell => Console.WriteLine("Beee");}
+```
+
+### Hiding vs Overriding 
+When overriding, even though the class is upcasted, the overridden method is the one evoked.
+When hiding, when the class is upcasted, the types method is called.
+```cs
+B b = new B();
+A a = b;
+
+b.Overriden();
+b.Hidden();
+a.Overriden();
+a.Hidden();
+
+public class A
+{
+    public void Hidden() => Console.WriteLine("A: This method will be Hidden");
+    public virtual void Overriden() => Console.WriteLine("A: This method will be Overriden");
+}
+
+public class B : A
+{
+    public new void Hidden() => Console.WriteLine("B: This method was Hidden");
+    public override void Overriden() => Console.WriteLine("B: This method was Overriden");
+}
+// --- Result ---
+B: This method was Overriden
+B: This method was Hidden
+B: This method was Overriden
+A: This method will be Hidden
+```
+However, with `base` (the same as `super` in other programming languages), you can access methods of 
+the base class nonvirtually. Meaning you can get the original definition of a virtual and hidden method.
+
+### Base Class Constructor 
+To instantiate the base class constructor use the `base` keyword as follows:
+```cs
+// With numbers I've marked the order of initialization.
+public class Person{...} // 3.
+public class Employee{
+    string company = "Msft"; // 1.
+    public Employee(string name) : base(name); // 2.
+    // 4.
+}
+```
+
+### Boxing, Static and Runtime type Checking
+Boxing is the act of wrapping value types into objects. This is done because C# has an unified type system. Where every 
+object extends from the `object` type. This includes value types, which can be boxed into objects. The process of 
+making a value type a reference type is called boxing and the opposite is called un-boxing. Obviously, this 
+is intended for value types as all user-defined types extend object by default.
+
+Programs in C# are checked both at compile time and at runtime. Static typing enables type checking at compile type. At 
+runtime, type checking is achieved as each object in the head stores a reference to `System.Type`. To get the type
+of an object you can use the `typeof` operator, which evaluates at compile time, and the `GetType` method on an instance, 
+which evaluates at runtime.
+
+### Structs
+- A struct is a value type, whereas a class is a reference type.
+- A struct does not support inheritance.
+- A struct can have all of the members that a class can, except for a finalizer. 
+- A struct cannot be subclassed, members cannot be marked as virtual, abstract or protected.
+
+Structs, to provide compiler optimization can have `readonly` methods, properties, and fields.
+To enforce that the whole struct is readonly, add the readonly modifier to the class.
+Classes just provide readonly fields. To make a property `readonly` omit the `set`.
+
+To specify that a struct must always live in the Stack declare the struct as `ref struct`.
+- If a value type appears as a parameter or local variable, it will reside in the Stack.
+- If it appears in a reference type (Array, Objects), it will reside on the Heap.
+
+> Using the `ref` modifier with structs seems weird as they are value types. However, in this context 
+> it indicates that the struct cannot live in a reference.
+
+### Access Modifiers
+- Public: Fully accessible. This is the implicit accessibility for members of an enum or interface.
+- Internal: Accessible only within the containing assembly or friend assemblies. This is the 
+default accessibility for non-nested types. (Within the same package / module for Kotlin).
+- Private: Accessible only within the containing type. This is the default accessibility
+for members of a class or a struct.
+- Protected: Accessible only within the containing type or subclasses. (Within subclasses).
+
+> An assembly is a compiled unit of code that can be a DLL (Dynamic Link Library) or an EXE (Executable). 
+
+### Accessibility Capping
+At first it might seem hard to understand but the members of a class are capped (limited), by the 
+class' Access Modifier. This makes sense if you think about it. If the class is internal, why should 
+the members be public? 
+
+### Interface
+- An interface can only have functions not fields. 
+- Interface members are implicitly abstract. However, an exception are Default Interface Members.
+- A class or struct can implement multiple interfaces. In constrast a class can only inherit 
+from a single class, and a struct cannot inherit at all.
+- Interface members are always public. This means that when you implement members, they must contain 
+the `public` access modifier. Implementing an interface means providing a `public` implementation for all 
+of its members.
+
+There is a difference between explicit implementation of an interface, and implicit implementation of an interface.
+- When an interface in implemented explicitly, the only way to call the implemented members is to cast the object to the 
+interface you want to call. Members implemented explicitly cannot be marked as public. 
+- When an interface in implemented implicitly, you can mark it as public.
+If you have signature collisions for interfaces, you must implement them explicitly. You can implement one implicitly, becoming 
+the default for the object.
+```cs
+var letter = new Letter();
+
+((B)letter).Spell(); // B
+letter.Spell();      // A
+letter.Demo();       // This is a Demo
+
+class Letter : A, B
+{
+    public void Demo()
+    {
+        Console.WriteLine("This is a Demo");
+    }
+
+    public void Spell()
+    {
+        Console.WriteLine("A");
+    }
+
+    // Implemented Explicitly.
+    void B.Spell()
+    {
+        Console.WriteLine("B");
+    }
+}
+
+// The signature for Spell collides.
+interface A{void Spell(); void Demo();}
+interface B{void Spell();}
+```
+> The only way to call an explicitly implemented member is to cast to its interface.
+> Another reason to implement members explicitly is to hide members that are highly specialized and 
+> distracting to a type's normal use case.
+```cs
+var secret = new Secret();
+
+class Secret : ISomehting
+{
+    // If public modifier is omitted, this would not be the Interface's member.
+    public void NotSuperSecret()
+    {
+        Console.WriteLine("Not Super Secret");
+    }
+
+    // Public accessibility modifier is prohibited in an explicit implementation of an Interface.
+    void ISomehting.SuperSecretOperation()
+    {
+        Console.WriteLine("Something Secret is Happening");
+    }
+}
+
+interface ISomehting{void SuperSecretOperation(); void NotSuperSecret();}
+```
+> Members that are declared explicitly are private; Members that are declared implicitly are public.
+
+### Implementing Interface Members
+Once an interface member is implemented, by default it is `sealed`. If you want to be able to override the implementation 
+in subclasses, mark the implementation with the `virtual` or `abstract` keyword.  
+
+> Remember, virtual provides implementation but can be overridden; abstract provides no implementation and can be overridden; new hides the implementation in the subclass.
+> To override an abstract or virtual function (as only functions can be abstract or virtual) use the `override` keyword. To 
+> avoid a member to be overridden, use the `sealed` modifier.
+
+As a reminder, when calling the interface overridden member through either the base class or the interface calls the
+subclass’s implementation.
+
+An explicitly implemented interface member cannot be market virtual, nor can it be overridden 
+in the usual manner. It can, however, be reimplemented.
+
+Interface reimplementation, as the name implies reimplements the interface.
+```cs
+var rtb = new RichTextBox();
+
+rtb.Undo();              // RichTextBox.Undo
+((IUndoable)rtb).Undo(); // RichTextBox.Undo
+
+public class RichTextBox : TextBox, IUndoable{public void Undo() => Console.WriteLine("RichTextBox.Undo");}
+public class TextBox : IUndoable{void IUndoable.Undo() => Console.WriteLine("TextBox.Undo");}
+public interface IUndoable{void Undo();}
+
+// --- If TextBox implemented implicitly ---
+rtb.Undo();              // RichTextBox.Undo
+((IUndoable)rtb).Undo(); // RichTextBox.Undo
+((TextBox)rtb).Undo();   // TextBox.Undo
+
+public class TextBox : IUndoable{public void Undo() => Console.WriteLine("TextBox.Undo");}
+```
+
+However, even with explicit member implementation, reimplementing interfaces should be avoided. Why? 
+1. Because the subclass can never call the base class method.
+2. The base class author might not anticipate that a method would be reimplemented
+and might not allow for the potential consequences.
+
+A better alternative is to design classes such that reimplementation will never be required.
+- When implementing a member, mark it `virtual` if appropriate.
+- When explicitly implementing a member, use the following pattern if you anticipate 
+that subclasses might need to override any logic:
+```cs
+public class TextBox : IUndoable
+{
+    void IUndoable.Undo()           => Undo(); // Calls method below.
+    protected virtual void Undo()   => Console.WriteLine("TextBox.Undo");
+}
+```
+If you don't anticipate subclassing, you can mark the class as `sealed` to preempt 
+interface reimplementation.
+
+### Default Interface Members
+Default interface members are pretty cool. Even though they are a feature in Kotlin and Java, C# 
+makes you explicitly declare the intent by casting the object to the interface to call the member. 
+```kotlin
+// Kotlin
+var doer = Doer();
+doer.SayHi();       // Hey!
+
+class Doer : IDoSomething{}
+interface IDoSomething{
+    fun SayHi(){
+        println("Hey!");
+    }
+}
+```
+```cs
+// C#
+var doer = new Doer();
+((IDoSomething)doer).SayHi(); // Hey!
+class Doer : IDoSomething{}
+interface IDoSomething{
+    void SayHi() => Console.WriteLine("Hey!");
+}
+```
+> C# is cool because it makes you specify your intent: To hide a method add new, and the example above.
+
+### Writing a Class Versus an Interface
+As a guideline:
+- Use classes and subclasses fro types that naturally share an implementation.
+- Use interfaces for types that have independent implementations.
+> As interfaces can only have functions, we could say that we use functions for behavior, and classes for behavior and implementation.
+
+### Enums
+An enum is a special value type that lets you specify a group of named numeric constants.
+- Since they are constants they do not need to be initialized just assigned.
+- Each enum member has an underlying integer value. By default is an sequence that starts at zero and increases by 1.
+- You can convert between integer representations and enums. Just cast them.
+
+Knowing that enums are just integer constants, you can use them as flags to combine them. Flags use the same concept as Unix 
+file permissions. You store the flags within a value, therefore better utilizing memory. Each bit represents a permissions.
+```cs
+var me = new User(){Permissions = FilePermissions.Read | FilePermissions.Write}; // Flag represents 0011.
+
+public class User{public FilePermissions Permissions{get; set;} = 0;}
+
+[Flags]
+public enum FilePermissions{
+    None = 0,
+    Read = 1,
+    Write = 2,
+    Execute = 4
+}
+```
+> Add the Flags attribute (annotation), to get a nice `ToString` method. It also specified your intent to other programmers.
+
+To toggle a flag use XOR (`^`), to check for a flag use AND (`&`), to add a flag use OR (`|`).
+```cs
+me.Permissions;                                 // 0011.
+me.Permissions ^= FilePermissions.Read;         // 0010.
+me.Permissions & FilePermissions.Write != 0     // true. (means has flag)
+```
+
+> By convention, a combinable enum type is given a plural rather than a singular name.
