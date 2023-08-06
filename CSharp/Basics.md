@@ -119,13 +119,13 @@ prefix the number with `^`. This `^1`, refers to the last element, `^2` refers t
 second to last element, and so on.
 
 You can also access ranges using `Range`. To declare a range, add the starting bound and the 
-end bound exclusive, with `..` in between. This `2..4` refers to from index 2 until (not including)
-index 4. For ranges you can omit either end, this means from the start or until the end.
+end bound exclusive, with `..` in between. This `2..4` refers to, from index 2 until (not including)
+index 4. For ranges, you can omit either end, this means from the start or until the end.
 
 ```cs
 int[] arr = {1,2,3,4,5,6};
 Index last = ^1;
-Range firstToThird = 0..3;
+Range firstToThird = ..3;
 Console.WriteLine(arr[last]);
 
 int[] slice = arr[firstToThird];
@@ -148,7 +148,7 @@ Multidimensional arrays can be either rectangular or jagged.
 
 ### Parameters
 Methods can accept parameters passed by value and by reference, the default behavior is pass 
-by reference. However, you can use parameter modifiers to override the defaults. The following
+by value. However, you can use parameter modifiers to override the defaults. The following
 are modifiers to pass by reference. In all cases the modifier should be used in both args and params.
 - `ref`: Passes value by reference.
 - `out`: Method returns argument as reference.
