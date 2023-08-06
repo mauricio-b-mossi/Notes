@@ -177,7 +177,7 @@ addNumbers(o:5, t:5);
 int addNumbers(int o, int t = 0) => o + t;
 ```
 
-The `params` modifier is serves the same function as `varargs` in Kotlin. The modifiers when used,
+The `params` modifier serves the same function as `varargs` in Kotlin. The modifiers when used,
 should be prefixed to an one-dimensional array type.
 ```cs
 Console.WriteLine(addAll(1,2,3,4,5,6,7,8,9))                // 45
