@@ -119,7 +119,7 @@ prefix the number with `^`. This `^1`, refers to the last element, `^2` refers t
 second to last element, and so on.
 
 You can also access ranges using `Range`. To declare a range, add the starting bound and the 
-end bound exclusive, with `..` in between. This `2..4` refers to the from index 2 until (not including)
+end bound exclusive, with `..` in between. This `2..4` refers to from index 2 until (not including)
 index 4. For ranges you can omit either end, this means from the start or until the end.
 
 ```cs
