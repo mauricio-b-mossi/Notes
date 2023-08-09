@@ -40,6 +40,19 @@ class Person
 }
 ```
 
+### Features I Like
+- `is` operator and pattern variable: When downcasting you can use `is` to check if it is of the type
+and if true, assign it to a variable of the type checked.
+```cs
+if(animal is Dog d) Console.WriteLine($"It is a dog {d.Bark()}");
+```
+- Hiding and overriding: When you want to hide a variable use `new` to indicate intent, use `override` 
+to override virtual and abstract members. Hiding is the same as overriding in Java, while overriding in C#
+overrides the implementation of the current and the base class.
+- Switch statements and expressions: Switch can be used either as an expression or statement.
+- Partial Classes: Allow you to define a class in multiple files.
+- Default accessibility for members of a class is `private`.
+
 ### Predefined Types
 Predefined types are types that are specially supported by the compiler (primitive types):
 - int
@@ -999,3 +1012,80 @@ me.Permissions & FilePermissions.Write != 0     // true. (means has flag)
 ```
 
 > By convention, a combinable enum type is given a plural rather than a singular name.
+
+### Nested Types
+Nested types have the following features:
+- It can access the enclosing type's private members and everything else the enclosing type can access.
+- You can declare it with the full range of access modifiers rather than just `public` and `internal`.
+- The default accessibility for a nested type is `private` rather than internal.
+- Accessing a nested type from outside the enclosing type requires qualification with 
+the enclosing type's name.
+
+All types (classes, structs, interfaces, delegates, and enums) can be nested within either a class 
+or a struct.
+
+> As a recap of defaults:
+> - The default accessibility for classes is internal.
+> - The default for members of a class is private.
+> - The default for members of an interface in public. 
+
+### Generics
+Whereas inheritance expresses reusability with a base type, generics express reusability with a 
+"template" that contains "placeholder" types.
+
+We say that Class<T> is an open type, whereas Class<int> is a closed type. At runtime, all generic 
+type instances are closed - with the placeholder types filled in. The creation of closed types 
+occurs at runtime.
+
+Generic methods introduce type parameters:
+```cs
+T Pop(){...}                        // Not a generic method. Does not introduce Type paramaters.
+void Swap<T>(ref T a, ref T b){...} // Generic method. Intruduces Type paramter T.
+```
+
+Type parameters can only be introduced in the declaration of classes, structs, interfaces, delegates and methods.
+Other constructs, such as properties, cannot introduce a type parameter, but they can use one.
+
+To constraint a generic use the `when` keyword to specify the constraint. The following can be read as a Garage
+that can hold any type of Vehicle.
+```cs
+class Garage<T> where T : Vehicle{...}
+```
+
+Where the constraints for a generic can be:
+```
+where T : base-class // Base-class constraint
+where T : interface  // Interface constraint
+where T : class      // Reference-type constraint (must be a reference type)
+where T : class?     // (see "Nullable Reference Types" in Chapter 1)
+where T : struct     // Value-type constraint (excludes Nullable types)
+where T : unmanaged  // Unmanaged constraint
+where T : new()      // Parameterless constructor constraint (the type has a parameterless constructor).
+where U : T          // Naked type constraint
+where T : notnull    // Non-nullable value type, or (from C# 8)
+                     // a non-nullable reference type
+```
+
+### Generic Type Casting
+You need to be careful with typecasting Generics as the cast operator can perform several kinds 
+of conversion, including:
+- Numeric Conversion
+- Reference Conversion.
+- Boxing/Unboxing conversion.
+- Custom conversion.
+
+The decision as to which kind of conversion will take place happens at ***compile time***, based 
+on the know types of the operands. Therefore, several alternatives to this:
+- First upcast to `object`, and then downcast to the type. This is because all objects can
+be upcasted to `object`, and conversion to and from object are assumed not to be custom.
+- Use `is` pattern not to cast the variable, but to create a new variable with the cast.
+- When dealing with value types, cast to object to perform boxing and then unboxing.
+- Alternative, use `as` but you run the risk of having `null` of `NullPointerException` instead of `InvalidCastException`, 
+which makes debugging hard.
+
+### Variance
+Only ***arrays, interfaces, and delegates*** support covariance. By default, arrays a covariant, which as Java,
+can produce undesirable results. Same as Kotlin, use `in` and `out` modifiers, on interfaces or delegates,
+to specify whether the Type parameter is consumed (`in`) or outputted (`out`). 
+
+> `out` modifier on T indicates that T is used only in output position. Method parameters marked as `out` are not eligible for covariance.
