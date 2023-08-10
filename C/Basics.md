@@ -3,11 +3,20 @@
 underscore are always reserved. For example `_Bool` was introduced in C99, anyone who used the `_Bool` identifier
 was stuck with version prior to C99 or had to refactor.
 - Indirection is the process of accessing a value indirectly through a pointer `*(address)`.
+- Function pointers are not that difficult:
+    - Declaration: `type (*name)(parameter-types)`.
+    - Assignment: `name = func` or `name = &func`, both work.
+    - Invocation: `name(args);` or `(*name)(args)`, both work.
+- Macros: Macros (`#define`) are a way to define constants, expressions, snippets that are expanded at compile time.
+   Basically, macros are substituted in by the compiler.
+- Qualified == has a type qualifier: `const`, `volatile`, `restricted`.
+- Header files just contain definitions. They are similar to typescript types.
+- `#include` Copy pastes code into the compilation in place.
 ### Features I Like (and Don't)
 - `Don't`: Do not like the ability to define type definitions `typedef int myint`.
+- Function pointers: The idea is good, but can be implemented multiple ways.
 
 ### Pointers
-
 A variable is a named location in memory that stores a value of a specific data type.
 ```c
 // i stores 0;
@@ -102,7 +111,7 @@ life all throughout the execution of the program. Static objects must be initial
 
 ### Object Types
 
-##### Boolean types
+#### Boolean types
 From the start of C, there was no explicitly way to specify a `bool`. Therefore, a `0`
 represented `false`, while `1` represented true. Not only that, any number that is not `0`
 is considered truthy.
@@ -120,7 +129,7 @@ way you can explicitly specify that you expect a boolean type. Furthermore, with
 `<stdbool.h>` header, you can also spell this type as `bool` and assign it the values
 true (which expands to the integer 1), and false (which expands to the integer 0).
 
-##### Char types
+#### Char types
 There are three different character types in C: `char`, `signed char`, `unsigned char`. Each 
 compiler implementation will define `char` to have the same alignment, size, range, 
 representation, and behavior as either signed char or unsigned char.
@@ -130,7 +139,7 @@ representation, and behavior as either signed char or unsigned char.
 You can but should not use `char` to store small integer values, as the underlying implementation
 might make you code not compatible with other compilers. Instead, prefer `unsigned char` or `signed char`.
 
-##### Integer types 
+#### Integer types 
 Signed integer types include: `signed char`, `short int`, `int`, `long int`, `long long int`.
 The `int` word for all integer declarations except `int` can be omitted. For each 
 signed integer type, there is a corresponding unsigned integer type. 
@@ -138,11 +147,11 @@ signed integer type, there is a corresponding unsigned integer type.
 > The size of the integer is determined by the CPU architecture, use <inttypes.h> for
 > specific integer types.
 
-##### Floating types
+#### Floating types
 C supports three floating point types: `float`, `double`, `long double`. Again, the implementation
 is compiler dependent.
 
-##### Enum types
+#### Enum types
 An enumeration allows you to define a type that assigns names to integer values. The actual 
 enumeration constant must be representable as an `int`, buts its type is implementation defined.
 For example, GCC uses as `unsigned int`, whereas Visual C++ uses a `signed int`.
@@ -151,14 +160,14 @@ For example, GCC uses as `unsigned int`, whereas Visual C++ uses a `signed int`.
 enum month{jan = 1, feb, march, april, ...}
 ```
 
-##### Void types
+#### Void types
 Void by itself, means "cannot hold any value", you can use it to indicate a function returns 
 no value or that a function accepts no arguments. On the other hand, `void*` indicates
 that the pointer can reference any object.
 
 ### Derived types
 
-##### Function Types
+#### Function Types
 Function types are derived types, meaning their type is derived from other types. In the 
 case of a function type, the type is derived from the return types, the number and types 
 of parameters.
@@ -175,7 +184,7 @@ int add(int a, int b);
 void takeNothing(void);
 ```
 
-##### Pointer types
+#### Pointer types
 A pointer type is derived from the function or object that it points to, called the 
 reference type. You can use the `&` to get the reference of an object or a function.
 To dereference, get the value, of a pointer you use the `*` operator on the pointer type.
@@ -193,7 +202,7 @@ pa = &*pa;
 printf("A: %d", a); // 20
 ```
 
-##### Array Types
+#### Array Types
 You declare an array type as `type array-name[size]`. This is different form other languages.
 ```c
 // C
@@ -212,7 +221,7 @@ access `array-name[1]`, you will get an array as a result. If you access `array-
 will get an item as a result.
 > In C# you have the concept of Jagged and Rectangular Arrays, a matrix is considered a rectangular array as it is defined statically.
 
-##### Structs
+#### Structs
 A structure type contains sequentially allocated memory objects. Each object has its own 
 name and may have a distinct type. To access the members of a struct object use the structure 
 member operator (`.`) to access members from a struct pointer use the structure pointer operator (`->`).
@@ -240,7 +249,7 @@ struct person{
 } x, *y;
 ```
 
-##### Unions
+#### Unions
 Unions are somewhat similar to structs. However, the union can only have one value at a time.
 The size of the union, is the same as the largest member. Unions are mainly used to save
 memory.
@@ -275,24 +284,17 @@ union box{
 A common error I committed when I started with C is that I declared structs instead of 
 creating structs. In the example above, since the names `n`, `ni`, `nf` are after the 
 struct body, the name is an identifier, if the name is before the struct body it declares 
-a type.
+a tag.
 
-##### Things to remember about unions and structs
+#### Things to remember about unions and structs
 In C, the -> (arrow) operator is used to access members of a structure or a union through a
 pointer to that structure or union. It provides a way to access members when you have a pointer
 to the structure, while the . (dot) operator is used when you have an actual instance of the structure 
 or union.
 
-An important thing while using `union` and `struct`. To use one or the other use the following syntax:
-```c
-// Assuming there is a person and a box declaration.
-struct person p;
-union box b;
-```
-
 You might see structs created and defined in several ways.
 ```c
-// Struct definition.
+// Struct with tag.
 struct person{...};
 // Anonymous struct creation.
 struct {...} person;
@@ -303,7 +305,74 @@ struct {...} person, *p;
 2. The second example creates an anonymous struct `person`.
 3. The third example creates an anonymous struct `person` and a pointer to the anonymous struct.
 
+Tags are a special naming mechanism for structs, unions, and enumerations. By itself, a
+tag is not a type name and cannot be used to declare variables. Instead, you must decare 
+variables of this type as:
+```c
+// Assuming there is a person and a box declaration.
+struct person p;
+union box b;
+```
+
+Tags are the reason why you cannot create instances of structs, unions, enums as follows:
+```c
+person p;
+box b;
+```
+
+Importantly, tags are defined in a separate namespace from ordinary identifier. This allows 
+a C program to have both a tag and an identifierwith the same spelling in the same scope.
+```c
+struct person{...};
+struct person person; // Declaring a struct person named person.
+```
+
+If you want to achieve the behavior of structs as types use `typedef`: 
+```c
+typedef struct {...} person; // Creating a person type.
+```
+
 Remember, even though the struct and pointer have been created, their values have not been set. 
 Therefore, for example, `*p` is a pointer to an anonymous struct, but it does not point to any 
 anonymous struct yet.
 
+### Function Pointers 
+Function pointers as the name implies are pointers to functions. To declare a function pointer use 
+`return-type (*func-name)(parameter-types)`:
+```c
+/* 
+ * Created a function pointer named func that accepts the address of a 
+ * function with signature void(int, int).
+ */ 
+void (*func)(int, int);
+```
+Here is where it might get confusing. There are two ways of setting a function pointer.
+```c
+void printRes(int a, int b);
+
+// 1. Directly assigns the address of printRes.
+func = printRes;
+
+// 2. Explicitly assigns the address of printRes.
+func = &printRes;
+```
+In C, when you use the function name without parenthesis, it effectively represents 
+the address of the function. This allows the syntax in the first example. So both 
+`printRes` and `&printRes` refer to the same memory address.
+
+When calling a function through a pointer, you can either dereference the pointer explicitly
+of use the function pointer directly without dereferencing.
+```c
+// Both are the same.
+(*printRes)(1,2);
+printRes(1,2);
+```
+
+##### Type Qualifiers
+Type qualifiers change the behavior when accessing objects of the qualified type. The type qualifiers 
+are: `const`, `volatile`, `restrict`. The qualified and unqualified version of types can be used 
+interchangeably as arguments to functions, return values from functions, and members of unions.
+
+##### Strings
+Strings are quite complex in C, String literals and Character Constants. A string literal, is represented 
+as a pointer to the first character

@@ -81,6 +81,8 @@ signed and unsigned: `byte`, `short`, `int`, `long`. The unsigned are usually pr
 As mentioned above, these types, being predefined types, reference .NET types in the 
 `System` namespace. For example `SByte`, `Int16`, `Int32`, `Int64`, are what the types above reference.
 
+> Floating point types are known as *real types*, while Integer types are known as *integral types*.
+
 Of the types above `int` and `long` are first-class citizens and are favored by both C# 
 and the runtime. The other integral types are typically used for interoperability or 
 when space efficiency is paramout.
@@ -106,6 +108,11 @@ byte three = (byte)(one + two); // Or This.
 
 Floating point types have values that certain operations treat specially. These are `NaN`, 
 `+\infty`, `-\infty`, as well as other values (MaxValue, MinValue, and Epsilon).
+
+The floating point types include `float`(32), `double`(64), `decimal`(128). When using 
+the decimal point `.`, the compilers infers the type of the real type to be a double. Use 
+prefix `f` to specify a float type and `m` to specify a decimal type.
+
 > When using `==` a NaN value is never equal to another. To test use `float.IsNaN` or `double.IsNaN`.
 
 ### String
@@ -124,7 +131,7 @@ The former, is called array initialization expression where the size of the arra
 number of elements declared within the `{}`.
 
 > Creating an array always preinitialises the elements with default values. If the element
-> is a reference type, it is initialized to zero, if it is a value type, it is initialized to 
+> is a reference type, it is initialized to null, if it is a value type, it is initialized to 
 > the bitwise zeroing of memory.
 
 You can access elements relative to the end of an array using `Index`. To declare an index,
@@ -218,6 +225,13 @@ age++;
 Console.WriteLine(person.getAge()); // 21
 public class Person{...}
 ```
+
+### Difference between ref in C# and pointers in C.
+`ref` in C# literal passes the reference to the object. This means that changes made 
+to the ref within the function will reflect in the variable as they both point to the 
+same address in memory. C# places more emphasis on safety. When you pass an argument
+with the `ref` modifier, you are passing a reference to the original variable. This 
+prevents certain types of pointer related errors, like null references and buffer overruns.
 
 ### Dealing with `null`
 There are several ways to deal with null in C#:
@@ -362,12 +376,21 @@ foreach(char letter in name){...}
 ### Constants and static readonly
 A constant is evaluated statically at compile time, and the compiler literally substitutes its 
 value whenever used. A constant can be a `bool`, `char`, `string`, any of the built-in numeric 
-types, or an enum type. A constant must be initialized with a value.
+types, or an enum type. A constant must be initialized with a value. 
+
+> This is important with libraries for example, if your library has a `const`, it will literally
+> be compiled into the consumers binary. If you later change the `const`, the effects will not 
+> reflect in the consumers code UNTIL the consumer recompiles the whole program.
 
 Both `const` and `readonly` cannot be changed after assignment. However, there are not 
 interchangeable:
-- Use `const` when you know the constant value, before the program runs
+- Use `const` when you know the constant value.  
 - Use `readonly` when you dynamically get a non changing value.
+
+### Methods
+A method's signature must be unique within the type.
+> A method's signature is comprised by its name and parameter types ***in order***.
+> This does not include the parameter names (just types) and the return type.
 
 ### Local Methods
 Local methods are just methods within methods. They signal the reader that the method is 
@@ -381,6 +404,17 @@ int CalculateCube(int x){
     int Cube(int x) => x * x * x;
 }
 ```
+
+Adding the `static` modifier to a local method prevents it from seeing the local variables
+and parameters of the enclosing method. 
+
+> If your define a "function" (because it is a method) within the `main` method of the program or as a top-level statement 
+> (which is inserted within a `main` method by the compiler), the function is a local method. Therefore, if you add the static modifier 
+> to it, it cannot access the identifiers within the scope.
+
+Also, importantly, local methods cannot be overloaded.
+
+> An overloaded methods is a method with the same name but different signature.
 
 ### Overloading methods
 When overloading methods you cannot have the two methods with the same signature. A method's
@@ -487,7 +521,7 @@ public Person(name){
 
 Resist the temptation to think in Java. 
 - Properties look like methods, but without the `()` and can access `get` and `set`.
-- Constructors do not are not named, they just contain the return type.
+- Constructors are not named, they just contain the return type.
 
 If your implementation of a property is a getter and/or setter that simply reads and writes 
 to a private field of the same type as the property. An automatic property declaration 
@@ -506,6 +540,10 @@ public string Name{
 ```
 
 Just like field initialization `string name = "Jose";`, you can initialize properties `public string Name{get;set;} = "Jose";`
+
+> So if automatic properties are practically identical to fields, why should I use them? You should use automatic 
+> properties as they enable extensibility of your program. Without modify the identifier of the property, you can 
+> change its internal behavior. Thing you cannot do with a field.
 
 ### Object Initializers for fields and properties
 Object Initializers provide an alternative to optional arguments (default arguments) and named arguments. With Object initialization
@@ -541,7 +579,7 @@ public class Person{
 }
 ```
 
-The drawback is that for Object Initializers the fields cannot be read only. Under the hood, C# does something as follows:
+The drawback is that for Object Initializers, the fields cannot be read only. Under the hood, C# does something as follows:
 ```cs
 Person temp1 = new Person();
 temp1.name = "Jose";
@@ -576,6 +614,12 @@ public class Person{
     }
 } 
 ```
+
+***TLDR*** Historically, a combination of optional arguments and named parameters simplified 
+object construction and allowed both properties and fields to remain read-only. Object initializers
+did not permit this as an intermediate object was created, as seen above. However, in C# 9
+the init modifier was introduced which allows us to achieve read-only properties with 
+object initializers.
 
 ### Indexers
 Indexers allow you to access members of a class by index. To declare an index define 
