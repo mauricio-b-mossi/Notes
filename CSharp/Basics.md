@@ -25,6 +25,14 @@ expression, the last value is returned.
 string fullName => $"{firstName} {lastName}";
 void PrintFullName =>  Console.WriteLine(fullName);
 ```
+- `nameof` returns the name of the instance. `GetType` gets the type of an instance at 
+runtime. `typeof` gets information about a type at compile time.
+
+> `typeof` does not work on instances, it only works on Types.
+
+- To hide implementation details of an interface, you can explicitly implement the interface 
+members. The only way to access these explicitly implemented interface memebers is by casting 
+to the interface.
 
 > As a note, I tend to use Java code style instead of C#/C++/C code style.
 ```cs
@@ -844,22 +852,44 @@ which evaluates at runtime.
 - A struct does not support inheritance.
 - A struct can have all of the members that a class can, except for a finalizer. 
 - A struct cannot be subclassed, members cannot be marked as virtual, abstract or protected.
+- A struct always has a default constructor that performs a bitwise zeroing of all its members.
+If you define your own default constructor, you can still access the default constructor 
+using `default`.
+
+Prior to C# 10, structs were further prohibited from defining field initializers and parameterless constructors.
+```cs
+struct Person{
+    // Field Initializers
+    int age = 20;
+    string name;
+
+    // Default constructor
+    public Person(){name = "Juan"}
+}
+```
+This is because you can by pass everythin above just using the `default` keyword.
+```cs
+var person = new Person(); // {name = "Juan", age = 20}
+Person def = default;      // {name = null, age = 0}
+```
 
 Structs, to provide compiler optimization can have `readonly` methods, properties, and fields.
 To enforce that the whole struct is readonly, add the readonly modifier to the class.
 Classes just provide readonly fields. To make a property `readonly` omit the `set`.
+
+> You can also use readonly on methods to specify that the method should not modify data.
 
 To specify that a struct must always live in the Stack declare the struct as `ref struct`.
 - If a value type appears as a parameter or local variable, it will reside in the Stack.
 - If it appears in a reference type (Array, Objects), it will reside on the Heap.
 
 > Using the `ref` modifier with structs seems weird as they are value types. However, in this context 
-> it indicates that the struct cannot live in a reference.
+> it indicates that the struct cannot live in the heap, or within a reference type.
 
 ### Access Modifiers
 - Public: Fully accessible. This is the implicit accessibility for members of an enum or interface.
 - Internal: Accessible only within the containing assembly or friend assemblies. This is the 
-default accessibility for non-nested types. (Within the same package / module for Kotlin).
+default accessibility for non-nested types (classes). (Within the same package / module for Kotlin).
 - Private: Accessible only within the containing type. This is the default accessibility
 for members of a class or a struct.
 - Protected: Accessible only within the containing type or subclasses. (Within subclasses).
@@ -879,6 +909,10 @@ from a single class, and a struct cannot inherit at all.
 - Interface members are always public. This means that when you implement members, they must contain 
 the `public` access modifier. Implementing an interface means providing a `public` implementation for all 
 of its members.
+
+> An intereface can contain only methods. Remember, indexeres, properties all are transformed
+> by the compiler into methods. For properties `get_XXX` and `set_XXX`, while for indexers `get_Item`
+> and `set_Item`.
 
 There is a difference between explicit implementation of an interface, and implicit implementation of an interface.
 - When an interface in implemented explicitly, the only way to call the implemented members is to cast the object to the 
