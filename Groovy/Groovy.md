@@ -160,6 +160,13 @@ Groovy contains all the basic for loops.
 - `while`: Not much to explain, just your basic while loop.
 - `for`: Normal for loop `for(i = 0; i < number; i++)`.
 - `for in`: Similar to Kotlin `for(<var> in <container>)`.
+```groovy
+def names = ["Mauricio", "Valeria", "Cristy"]
+for(name in names) println(name)
+for(int i = 0; i < names.size(); i++) println(names[i])
+```
+
+> Under the hood, Groovy uses ArrayLists, therefore you cannot access the usual "length" property. Instead, use size.
 
 ###### Spaceship operator
 

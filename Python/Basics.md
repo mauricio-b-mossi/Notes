@@ -13,11 +13,10 @@ easily integrated with no need of dependencies such as JUnit Jest and others.
 
 > Languages that easily include Tests in their std are Go, Python, Rust and .NET.
 
-
 ### Basics
 - Just declare variables, no curly braces, just indentation and colon.
-- No parenthesis for `if`, `else`, `for`, `while`.
-- Functions are declared with the `def` keyword.
+- No parenthesis for `if`, `elif`, `else`, `for`, `while`.
+- Functions are declared with the `def` keyword. Can contain default and named arguments.
 - `try-catch-finally` is `try-except-else-finally` in Python. Where:
     - except represents catch, you can except specific errors.
     - else runs when no error is raised.
