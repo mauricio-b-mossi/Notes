@@ -12,7 +12,7 @@ cannot have child content within them, this is for example why `<script>` is not
 
 ### Attributes
 - Attributes are information we add to the HTML tags. Depending on the type of element it exposes certain default attributes.
-- Attributes can be boolean attributes, which act just as flags. If mentioned on, else false. 
+- Attributes can be boolean attributes, which act just as flags. If mentioned true, else false. 
 ```html
 <p class="attribute"></p>
 <a href="https://webstie.com"></a>
@@ -27,7 +27,7 @@ a good practice to avoid bugs. To escape double quotes within attributes use `&q
 <a title="Mike's website"></a>
 <a title='Mike"s website'></a>
 ```
-The character for escaping is the ampersand `&`. Reservded icons for HTML are `<` `>` `"` `'` `&`.
+The character for escaping is the ampersand `&`. Reserved icons for HTML are `<` `>` `"` `'` `&`.
 To include this characters use `&<name>`.
 `>` = `&gt;`
 `<` = `&lt;`

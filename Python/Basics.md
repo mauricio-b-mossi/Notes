@@ -47,6 +47,19 @@ import pandas as pd         # pd.() To access pandas module.
 from pandas import min, max # importing just a function called min and max from pandas module.
 ```
 
+### Scoping
+> Python variables are scoped to the innermost function, class, or module in which they're assigned.
+> Control blocks like if and while blocks don't count, so a variable assigned inside an if is still 
+> scoped to a function, class, or module.
+
+Unlike other languages such as C#, Java, C, in Python you can achieve this:
+```python
+if True:
+    y = 10
+print(y) # Perfectly prints y. 
+```
+This is because variables are scoped to the innermost function class or module.
+
 ### Tuples Lists and Dictionaries
 - Tuples are declared with `()`, they are immutable collection of values.
 - Lists are declared with `[]`, they are mutable dynamic lists. They are implemented 

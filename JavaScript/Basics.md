@@ -1,6 +1,44 @@
 ### Basics
 Here I will cover the basics of JS for those who are new, or coming back to the language.
 
+### Closures
+If a function is returned, it retains its lexical environment, that is why we can have closures in 
+JavaScript.
+> A closure is the combination of a function and the lexical environment within which that function was declared. 
+> This environment consists of any local variables that were in-scope at the time the closure was created. 
+
+```javascript
+function add(x){
+    return function(y){
+            return x + y
+        }
+}
+
+for(let i = 0; i < 10; i++){
+    const myadd = add(10 - i)
+    console.log(myadd(i))
+}
+```
+
+Closures are a feature of most programming languages that have functions as first class citizens.
+```python
+# Python.
+def add(x):
+    return lambda y : y + x
+
+for i in range(10):
+    myadd = add(10 - i)
+    print(myadd(i))
+```
+```kotlin
+// Kotlin.
+fun add(x : Int) : (Int) -> Int = {y -> x + y}
+for(i in 0..9){
+    val myadd = add(10 - i)
+    println(myadd(i))
+}
+```
+
 #### Variables
 Variables can be declared in four ways: Automatically, `var`, `let`, `const`.
 - ***Automatically*** : It is not recommended to do so.
@@ -8,6 +46,24 @@ Variables can be declared in four ways: Automatically, `var`, `let`, `const`.
 - `let` : Variables, can change.
 - `var` : Constants, cannot change.
 > Prefer const over let.
+
+An important difference of `var`, `const` and `let`, is that `var` is either global scoped or function scoped.
+This is crucial as it means that a `var` is help only on either the global scope or function scope. To illustrate,
+in other languages, mainly C, Java, etc. blocks create scopes. For example:
+```cs
+if(true){
+    int y = 10;
+}
+Console.WriteLine(y); // Fails to execute, no y defined in scope.
+```
+```javascript
+if(true){
+    var y = 10
+}
+console.log(y) // Logs perfectly, if you use let or const it does not work.
+```
+Similar to python, this ocurss because `var` declared variables are scoped to function, static initialization, or 
+module, or global scope.
 
 #### Loops and Control Flow
 Can use normal, `if`, `else if`, `else`, `for`, `while`, `do while`, and `switch`.
