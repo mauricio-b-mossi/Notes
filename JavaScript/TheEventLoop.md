@@ -167,7 +167,7 @@ So the question... how does this code works, first we have to remember the Event
 In this case, when the button is clicked, the browser pushed the `onClick` callback to the queue.
 The event loop, when the call stack is empty goes to the queue, and pushes the `onClick` callback to the call stack
 to execute. It executes the code sequentially, it even enters the Promise, as the promise 
-is run synchronously, but once it reaches the `setTimeout` is delegates the timeout to the Web APIs. The code 
+is run synchronously, but once it reaches the `setTimeout`, it delegates the timeout to the Web APIs. The code 
 beneath the `await delay(3000)` is not called because the `await` waits for the execution to finish, or put 
 simply queues a callback, to call the rest of the funciton when delay is fulfilled. Basically this:
 ```javascript
