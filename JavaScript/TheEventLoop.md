@@ -126,8 +126,7 @@ setTimeout(() => button.style.backgroundColor = "blue", 0) // Adding to queue
 No need to summarize, [Node.js](https://nodejs.org/en/docs/guides/event-loop-timers-and-nexttick#what-is-the-event-loop)
 states it perfectly. 
 > The event loop is what allows Node.js to perform non-blocking I/O operations - despite 
-> the fact that JavaScript is single-threaded - by offloading operations to the ***system kernel***  
-> whenever possible.
+> the fact that JavaScript is single-threaded - by offloading operations to the ***system kernel*** whenever possible.
 >
 > Since most modern kernels are multi-threaded, they can handle multiple operations
 > executing in the background. When one of these operations completes, the kernel
