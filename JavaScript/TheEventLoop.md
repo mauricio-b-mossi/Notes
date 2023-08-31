@@ -107,7 +107,7 @@ button.style.backgroundColor = "red"
 button.style.backgroundColor = "white"
 button.style.backgroundColor = "blue"
 ```
-Do not things that the button would flicker from red to white and from white to blue. 
+Do not think that the button would flicker from red to white and from white to blue. 
 This does not happen because all the JavaScript is run, after which the call stack is cleared
 and then the render step can be performed. The render step in this case gets that the button is 
 blue so it paints it accordingly.
