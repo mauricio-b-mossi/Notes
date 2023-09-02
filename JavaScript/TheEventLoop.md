@@ -107,7 +107,7 @@ button.style.backgroundColor = "red"
 button.style.backgroundColor = "white"
 button.style.backgroundColor = "blue"
 ```
-Do not things that the button would flicker from red to white and from white to blue. 
+Do not think that the button would flicker from red to white and from white to blue. 
 This does not happen because all the JavaScript is run, after which the call stack is cleared
 and then the render step can be performed. The render step in this case gets that the button is 
 blue so it paints it accordingly.
@@ -126,8 +126,7 @@ setTimeout(() => button.style.backgroundColor = "blue", 0) // Adding to queue
 No need to summarize, [Node.js](https://nodejs.org/en/docs/guides/event-loop-timers-and-nexttick#what-is-the-event-loop)
 states it perfectly. 
 > The event loop is what allows Node.js to perform non-blocking I/O operations - despite 
-> the fact that JavaScript is single-threaded - by offloading operations to the ***system kernel***  
-> whenever possible.
+> the fact that JavaScript is single-threaded - by offloading operations to the ***system kernel*** whenever possible.
 >
 > Since most modern kernels are multi-threaded, they can handle multiple operations
 > executing in the background. When one of these operations completes, the kernel
@@ -168,7 +167,7 @@ So the question... how does this code works, first we have to remember the Event
 In this case, when the button is clicked, the browser pushed the `onClick` callback to the queue.
 The event loop, when the call stack is empty goes to the queue, and pushes the `onClick` callback to the call stack
 to execute. It executes the code sequentially, it even enters the Promise, as the promise 
-is run synchronously, but once it reaches the `setTimeout` is delegates the timeout to the Web APIs. The code 
+is run synchronously, but once it reaches the `setTimeout`, it delegates the timeout to the Web APIs. The code 
 beneath the `await delay(3000)` is not called because the `await` waits for the execution to finish, or put 
 simply queues a callback, to call the rest of the funciton when delay is fulfilled. Basically this:
 ```javascript
