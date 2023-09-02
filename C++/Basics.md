@@ -6,6 +6,39 @@ the language, rather the patterns, `b)` knowing the pattern you can understand
 several programming languages at a time. Plus making documents like these help for 
 a quick refresher to the language.
 
+I've omitted things that are common across several languages such as conditionals,
+`if`, `else`, `switch`, as they are similar to C like languages: Java, C#, JavaScript.
+
+One important note, `switch` can only be used with integral types. Integral types are all 
+integers. Real types are all fractional numbers. This concept of Integral and Real types 
+is also seen in C#.
+
+### Important Concepts
+- `lvalue`: Left value, has a position in memory.
+- `rvalue`: Right value, does not have a position in memory.
+```cpp
+string firstname = "Mauricio";          // lvalue = rvalue
+string lastname = "Mossi";              // lvalue = rvalue
+string fullname = firstname + lastname; // lvalue = (lvalue) + (lvalue) -> lvalue = rvalue.
+// The addition of strings does not store a string in memory or mutates a string, rather it creates 
+// a new string literal, therefore it is a rvalue.
+```
+
+This example, illustrates lvalue, and rvalue perfectly:
+```cpp
+Type& alterType(Type& t){   // Non-const lvalue reference to type 'Type' cannot bind to a temporary of type 'Type'
+    return Type{20}         // Error, function should return lvalue but returns rvalue
+}                           // Type& is rvalue, since it is a reference it is stored somewhere,
+                            // and I am returning a Type which is not stored anywhere. Consequently
+                            // I am returning an rvalue where a lvalue is expected.
+
+Type& alterType(Type& t){
+    t = 20;
+    return t;               // Works, returning t which is a lvalue.
+}
+```
+
+
 ### The Compiler Tool Chain
 After writing the source code for a C++ program, the next step is to turn
 your source code into an executable program.
@@ -223,4 +256,211 @@ char mystr[] = "my "
              "is "
              "Mauricio";
 printf("%s", mystr); // my name is Mauricio
+```
+
+### User Defined Types
+User defined types are types that the user can define. The three broad categories of user 
+defined types are **enums**, **classes**, and **unions**.
+
+#### Enums
+C++ has both Scoped and Unscoped enums. Scoped enums where introduced in C++ 11, to declare them
+use `enum class`. Unscoped enums come from C, to declare them use `enum`. The difference between Scoped and Unscoped enums is that Unscoped enums,
+as the name implies are Unscoped, and they can be converted to and from ints. On the 
+other hand, Scoped enums are scoped, you need to access them through the enum's namespace, and 
+they cannot be redly converted to and from ints.
+```cpp
+enum class Color{RED, GREEN, BLUE};
+Color red = Color::RED;
+int numRed = static_cast<int>(Color::RED);
+
+enum Color{RED, GREEN, BLUE};
+Color red = RED;
+int numRed = RED;
+```
+Prefer Scoped enums over Unscoped enums.
+
+> You can use `enum class` with `switch`. Even though `swich` only accepts integral types,
+> under the hood, `enum class` have integral types associated with them.
+
+```cpp
+enum class Color {RED, GREEN, BLUE};                // Compiler chooses the underlying type.
+enum class Size : short {SMALL, MEDIUM, LARGE};     // Specify underlying type as short.
+```
+
+#### POD Classes
+Classes are user-defined types that contain data and functions. The simplest type of class
+is the plain-old-data class, POD for short. As the name implies these data classes are used 
+mainly to store data.
+```cs
+struct Book{
+    char rating;
+    int pages;
+    char category;
+}
+```
+
+PODs have some useful low-level features. C++ guarantees that members will be sequential in 
+memory, although some implementations require members to be aligned along word boundaries.
+If you know about data alignment, word length, and word boundaries, you might of spotted the mistake 
+in the code above.
+
+##### Detour to word boundaries
+> What does 64 and 32 bit processors mean? This represents the size of data your CPU can fetch
+> per cycle. It is important to note that the values are in bits. A 64 bit processor can fetch 
+> 8 bytes per instruction, while a 32 bit processor can fetch 4 bytes per instruction.
+>
+> Here is where data alignment comes in. In the example above, `Book` contains the data types `char`,
+> `int`, and `char`, in their respective order, given that I have a 32 bit processor, this means
+> that per cycle, my CPU can fetch and process 4 bytes of data. To make processing efficient, some
+> times data is ***aligned*** around word boundaries, sacrificing memory for speed. Think about it, if 
+> I stored `Book` in a contiguous block of memory it would just take 6 bytes, but how would I process
+> the `int`, or one of the `chars`? I would need to use two CPU cycles to process the char and calculate, 
+> the offset to get the second char. Pretty inefficient. The solution is to align data. That 
+> way I can easily get and process information. 
+
+> The code below illustrates data alignment.
+
+```cpp
+struct Book{
+    // Size should be 12
+    char grade; // 1 byte
+    int pages;  // 4 bytes
+    char rating;// 1 byte
+};
+
+struct GBook{
+    // Should be 8
+    char grade; // 1 byte
+    char rating;// 1 byte
+    int pages;  // 4 bytes
+};
+
+int main() {
+    printf("Should be 12: %zd\n", sizeof(Book)); // 12
+    printf("Should be 8: %zd\n", sizeof(GBook)); // 8
+}
+```
+
+#### Unions
+Usually you would not use unions, they are containers of data that can only store 
+one member at a time. Consequently, the size of the `union` depends on the size of 
+the largest member of the type.
+```cpp
+union Box{
+    char str[4];
+    int num;
+};
+```
+In the example above, since both `char str[4]` and `int num` have a size of 4 bytes,
+`Box` will also have a size of 4 bytes. The problem with unions, or rather its feature,
+is that all members point to the same location in memory. Consequently, is I set 
+`Box.num{0x48454C4C4F}` and retrieve and iterate over `str`, I will get the string "Hello".
+```cpp
+union Box{
+    int num;
+    char str[4];
+};
+
+int main(){
+    Box box{0x484F4C41};
+    for(int i = 0; i < 4; i++){
+        cout << box.str[4 - i - 1]; // *If your system saves data from least significant byte to most significant byte*
+                                    // Prints "HOLA" to the console.
+    }
+}
+```
+
+##### Detour to Endianness
+> Endianness: Refers to how you computer saves data. Endianness is primarily expressed
+> as ***big-endian*** or ***little-endian***. 
+> - A big endian system stores the most significant byte of a word at the lowest memory address.
+> - A small endian system stores the least significant byte of a word at the lowest memory address.
+
+In the example above, I ran the program in a little-endian system, I the most significant byte,
+48 in hex, or H in ASCII, was stored last. Therefore, I had to traverse from the back to the front 
+of the string to get the string `"HOLA"`. Note, this is not the correct way to construct strings. 
+As mentioned above, for C style strings, the last element must be null.
+
+For further proof, if we set `Box.num{1}`, this would be the same as `0b00000001`. If I get the 
+first byte and it is 1. This means that my system stores the least significant byte first.
+```cpp
+Box box{1};
+if(box.str[0] == 1){
+    cout << "SMALL ENDIAN"; // If the first item is 1, then system stores the LSB at the lowest address in memory.
+}
+
+// -- Or --
+
+int n = 1;
+if(*(char *)&n == 1) cout << "SMALL ENDIAN";
+```
+
+### Fully Features C++ Classes
+`struct` and `class` can be used interchangeably, the only difference is the default accessibility
+modifier. By default, `struct` members are public, while `class` members are private.
+To manually set the accessibility modifier of `class` and `struct` members use `public:`
+and `private:`.
+```cpp
+class Dog{
+    int age;
+    char name[10];
+
+  public:
+    void bark(){
+        cout << "Woof" << endl;
+    }
+}
+```
+
+Constructor declarations don't state a return type, and their name matches the class's name.
+```cpp
+class Dog{
+//-- snip --
+    Dog(const char* name, int age){
+        ...
+    }
+}
+```
+
+The Destructor is a clean up function, with the same name as the constructor but prefixed with 
+the `~`. It runs clean up code when the object is destroyed. Note, the destructor cannot take arguments.
+```cpp
+class Dog{
+//-- snip --
+    ~Dog(){
+        printf("Descructing %s", name);
+    }
+}
+```
+
+### Initialization
+Hang on, initialization is a mess. There are several ways to initialize types in C++. As a rule 
+of thumb, prefer brace initialization. You can initialize a fundamental type, primitive type, as 
+follows:
+```cpp
+int a = 0;
+int b{};
+int c = {};
+int d;
+```
+
+All the above initialize the variable to 0 but `d` which has undefined behavior: avoid initializing a variable like `d`.
+Initializing to an arbitrary value is similar to initialing a fundamental type to zero:
+```cpp
+int e = 42;
+int f{42};
+int g = {42};
+int h(42);
+```
+
+All the above initialize the variable to `42`. However you should avoid `h`, as if you get used to it, you 
+might get the ***most vexing parse***. Where a `Type <variable>()` is not interpreted as an 
+initialization but rather a function.
+
+For arrays and Plain data objects you can also use brace initialization. Additionally, 
+brace initialization generates warnings due to ***narrowing conversion***: when the literal 
+of a variable is truncated to fit the type.
+```cpp
+int a = 1.2;    // a = 1 
+int b = {1.2};  // Error: double cannot be narrowed to int.
 ```
