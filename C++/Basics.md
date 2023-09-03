@@ -464,3 +464,98 @@ of a variable is truncated to fit the type.
 int a = 1.2;    // a = 1 
 int b = {1.2};  // Error: double cannot be narrowed to int.
 ```
+
+### Reference Types
+C++ provides two main reference types ***pointers*** and ***references***. Pointers, as the 
+name implies point to a position in memory. References refer to an object in memory. Knowing this 
+we can say that references are ***lvalues***: they are stored in memory. Pointers allow you 
+to perform pointer arithmetic (increment and decrement), where the type of the pointer
+defines the size of the jump of addresses. For example, if I have an `int*` then the 
+jump in addresses will be 4 bytes, 32 bits, since that is the size of the `int` type.
+
+```cpp
+int hola{0x484F4C41};
+for (int i = 3; i > -1; i--) {
+cout << *(((char *)&hola) + i); // HOLA
+}
+```
+
+This example illustrates pointer arithmetic of `char*`. Since `char` has a size of 1 byte, 8 bits,
+increment or decrement operations on `char*` increase or decrease the address in multiples of 
+1 byte. This is why through pointer arithmetic we can get the individual bytes of `int hola`.
+
+With pointer you can dereference an address, in simple terms this means getting the value stored 
+in that address. This is done with the dereference operator `*`. We used the dereference operator in 
+the example above to get the value of `char *`.
+
+References literal pass and get the reference to an object, the difference between a pointer and a reference
+is that references cannot be set to reference another object in memory. The value of the reference represents 
+the value of the reference object in memory. If used as a lvalue, you can modify the object being referenced,
+if used as a rvalue, you get the value of the object being referenced.
+
+##### Member-of-Pointer (->)
+You might see the `->` operator, this is short hand notation for accessing members of a 
+pointer object. To illustrate:
+```cpp
+struct Box{int items;};
+
+int itemsInBox(Box* box){
+    return box->items;
+};
+
+int p_itemsInBox(Box* box){
+    return (*box).items;
+};
+```
+Both, `itemsInBox` and `p_itemsInBox` do the same thing, the only difference is in the notation used.
+
+A question might arise, when do I use pointers and when do I use references. 
+
+##### Arrays and Pointers
+> Pointers share several characteristics with arrays. Pointers encode object location.
+> Arrays encode the location and length of contiguous objects. <mark>At the slightest provocation, 
+> an array will decay into a pointer</mark>. A decayed array loses length information and 
+> converts to a pointer to the array's first element.
+
+When an array has not decayed to a pointer, you can use the `sizeof` operator to get the size in bytes
+of the array. Every time you pass the array variable to a lvalue, the array will decay to a pointer.
+
+From other languages you might of seen the `[]` notation for indexing arrays. The same works for arrays and 
+pointers in C++. Indexing a pointer calculates the offset size and dereferences the pointer:
+```cpp
+int nums[3]{1,2,3};
+cout << (nums[2] == *(nums + 2)) << endl; // true.
+```
+
+The code above prints 1 to the console, remember booleans can be readily converted to and from 
+integers, where a true state converts to 1 and false converts to 0. 
+
+##### Void and std::byte Pointers
+- Void pointers are used when the pointed type is irrelevant. Since void holds no value, 
+it is impossible to dereference a `void*`. For similar reasons since `void` does not have size,
+pointer arithmetic is not possible with `void*`.
+
+- `std::byte` pointers are sued when you want to interact with individual bytes of memory. This is 
+especially handy when you consider that the smallest addressable unit of memory is the byte.
+
+##### nullptr
+`nullptr` is the default value assigned to a pointer when you used brace initialization. It represents 
+a pointer with no value. <mark>Pointers have an implicit conversion to `bool`. Any value
+that is not `nullptr` converts implicitly to `true`, whereas `nullptr` converts implicitly to 
+false</mark>.
+
+##### References
+> References are safer, more convenient versions of pointers. You declare references with 
+> the `&` declarator appended to the type name. References cannot be assigned to null (easily),
+> and they cannot be reseated (or reassigned).
+
+Think of references as a dereferenced pointer to an lvalue. If you are familiar with C#, references
+are the same, or similar, to `ref`.
+```cpp
+void changeName(&Student s){
+    s.name = "Jose";
+}
+```
+With references, you can only retrieve the value of the referenced object, or set the value of 
+the referenced object. Unlike pointers, you cannot make a reference refer to another object after 
+Initialization.

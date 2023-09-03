@@ -3,7 +3,7 @@ Easy to prototype and test. I like that you can easily switch between Unit Test
 and main program. You can simply run the unit test by running the unit test script
 or the main by running the main. Remember to use `if __name__ if main`.
 
-> Can run a module as script by using -m <module> file.py. When you run a module,
+> Can run a module as script by using python -m <module> file.py. When you run a module,
 > the module knows how to run your code, no need to instantiate. When used with `unittest`,
 > no need for `if __name__ == "main"` nor object instantiation. The module does all that for 
 > you.
