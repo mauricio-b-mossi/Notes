@@ -1,7 +1,7 @@
 ### Introduction to C++
 Hi, in this series I intend to introduce C++. I've found it that the best way 
-to learn a programming language, is by pointing out its distinct and similar
-with other programming languages. This is beneficial as `a)` you do not learn 
+to learn a programming language, is by pointing out its distinct and similar features and syntax
+to other programming languages. This is beneficial as `a)` you do not learn 
 the language, rather the patterns, `b)` knowing the pattern you can understand 
 several programming languages at a time. Plus making documents like these help for 
 a quick refresher to the language.
