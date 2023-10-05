@@ -1,263 +1,3 @@
-### Introduction to C++
-Hi, in this series I intend to introduce C++. I've found it that the best way 
-to learn a programming language, is by pointing out its distinct and similar
-with other programming languages. This is beneficial as `a)` you do not learn 
-the language, rather the patterns, `b)` knowing the pattern you can understand 
-several programming languages at a time. Plus making documents like these help for 
-a quick refresher to the language.
-
-I've omitted things that are common across several languages such as conditionals,
-`if`, `else`, `switch`, as they are similar to C like languages: Java, C#, JavaScript.
-
-One important note, `switch` can only be used with integral types. Integral types are all 
-integers. Real types are all fractional numbers. This concept of Integral and Real types 
-is also seen in C#.
-
-### Important Concepts
-- `lvalue`: Left value, has a position in memory.
-- `rvalue`: Right value, does not have a position in memory.
-```cpp
-string firstname = "Mauricio";          // lvalue = rvalue
-string lastname = "Mossi";              // lvalue = rvalue
-string fullname = firstname + lastname; // lvalue = (lvalue) + (lvalue) -> lvalue = rvalue.
-// The addition of strings does not store a string in memory or mutates a string, rather it creates 
-// a new string literal, therefore it is a rvalue.
-```
-
-This example, illustrates lvalue, and rvalue perfectly:
-```cpp
-Type& alterType(Type& t){   // Non-const lvalue reference to type 'Type' cannot bind to a temporary of type 'Type'
-    return Type{20}         // Error, function should return lvalue but returns rvalue
-}                           // Type& is rvalue, since it is a reference it is stored somewhere,
-                            // and I am returning a Type which is not stored anywhere. Consequently
-                            // I am returning an rvalue where a lvalue is expected.
-
-Type& alterType(Type& t){
-    t = 20;
-    return t;               // Works, returning t which is a lvalue.
-}
-```
-
-
-### The Compiler Tool Chain
-After writing the source code for a C++ program, the next step is to turn
-your source code into an executable program.
-- The ***preprocessor*** performs basic source code manipulation, for example
-handling directives such as `#include`, `#pragma`, `#define`, and produces a 
-translation unit.
-- The ***compiler*** reads the translation unit and produces an object file. 
-Compilers work on one translation unit at a time.
-- The ***linker*** generates programs from object files. Linkers are also 
-responsible for finding the libraries you've included within your source code.
-
-### Printf
-We know that we can print constants like `"Hello World"` easily with `printf`. To 
-print values other than strings, use format specifiers. The first argument of 
-`printf` is always a format string. The format string provides a template for the 
-string to be printed. Format specifiers tell printf how to interpret and format the 
-arguments following the format string: `printf(<format-string>, <args>)`.
-
-> `printf` has issues, and once you've learned `cout`, you should prefer it [...].
-> Using cout means you do not need format strings, so you don't need to remember 
-> format specifiers.
-
-### Fundamental Types
-Fundamental types are the most basic types of object and include integer, floating-point,
-character, boolean, byte, size_t, and void. Some refer to fundamental types as primitive 
-or build-in types because they're part of the core language and almost always available to you.
-These types will work on any platform,but their features, such as size and memory layout,
-depend on implementation.
-
-#### Integer Types
-Same as C, you have `short int`, `int`, `long int`, and `long long int`. All of the previous,
-except for `int` itself can omit the `int` postfix. Also all the above can be either signed (positive and negative)
-or unsigned (non-negative). By default, integer types are signed and int by default.
-
-A literal is a hard-coded value in a program. You can use one of the four hard-coded, integer literal
-representations:
-- ***binary***: Uses `0b` prefix, `0b0011`.
-- ***octal***: Uses `0` prefix, `03`.
-- ***decimal***: Default `3`.
-- ***hexadecimal***: Uses `0x` prefix, `0x03`.
-
-> Be careful with things such as zip codes which might start with `0` as this `int zip = 021339` won't compile because 9 is not an octal digit.
-
-For readability, integer literals can contain `'` to separate values, `1'000'000`.
-Importantly, integer literals take up the smallest type that fits its value. You can 
-specify the type in the declaration or in the literal:
-```cpp
-long ...
-takeLong(123L);
-```
-
-Number format specifiers:
-- short: `%hd`.
-- unsigned short: `%hu`.
-- int: `%d`.
-- unsigned int: `%u`.
-- long: `%ld`.
-- unsigned long: `%lu`.
-- long long: `%lld`.
-- unsigned long long: `%llu`.
-- hexadecimal: `%x`.
-- octal: `%o`
-
-
-#### Floating-Point Types
-- float: single precision.
-- double: double precision.
-- long double: extended precision.
-
-Floating-Point literals are double precision by default. If you need single or extended 
-precision add the postfixes `f` or `l` to the literal.
-
-Number format specifiers:
-- printf chooses format: `%g`.
-- decimal digits: `%f`.
-- scientific notation: `%e`.
-
-For double precision just prepend the letter `l` to the specifier: `%lg`, `%lf`, etc. 
-For extended precision just prepend the letter `L` to the specifier: `%Lg`, `%Lf`, etc. 
-
-#### Character Types
-Character types store human language data. The six character types are: `char` (1 byte), 
-`char16_t` (2-bytes), `char32_t` (4-bytes), `signed char`, `unsigned char`, `wchar_t`.
-
-The character types `char`, `signed char`, and `unsigned char` are called narrow characters, 
-whereas `char16_t`, `char32_t`, and `wchar_t` are called wide characters due to their storage requirements.
-
-Characters by default are of type `char` to declare a literal of a different type, prefix
-the character literal with `L` for `w_char_t`, `u` for `char16_t`, and `U` for `char32_t`.
-For example: `'A'` is a `char`, but `L'A'` is a `w_char_t`.
-
-Character format specifiers:
-- char: `%c`.
-- wchar_t: `%lc`.
-
-> `char`, `unsigned char`, and `signed char` can, and are used, in C like a byte type. 
-> You can perform arithmetic on arithmetic on chars. To avoid performing unsafe operations
-> on chars, C++ provides the `std::byte` type, which actually represents a byte.
-
-##### Escape Sequences
-Some characters don't display on the screen. Instead, they force the display to do 
-things like move the cursor to the left side of the screen (`\r`), or move the 
-cursor down one line (`\n`). To put these characters into a `char` use escape sequences.
-
-#### Boolean Types
-Boolean types have two states: true and false. The sole boolean type is `bool`. 
-To initialize boolean types use the `true` and `false` literals. 
-
-> Integer types and the bool types convert readily: the true state converts to 1, 
-> and the false converts to 0. Any non-zero integer converts to true, and 0 converts to 
-> false.
-
-As boolean types are integers, the format specifier is also `%d`.
-
-Operators on Boolean types can be unary, binary, or ternary, it depends on how many operands
-the operator takes.
-
-#### std::byte Type (C++17), <cstddef>
-This type does not have an exact corollary type in the C language. Like C++, C has `char`
-and `unsigned char`. These types are less safe to use because they perform arithmetic  on a 
-`char` but not a `std::byte`.
-
-> The odd-looking `std::` prefix is called a namespace. That is why when you use
-> `using namespace std;` you avoid specifying the namespace each time. 
-
-#### size_t Type, <cstddef>
-The `size_t`, encodes the size of objects. It guarantees to store the maximum 
-size in bytes of all objects. Technically this means that `size_t` could take 2
-bytes or 200 bytes depending on the implementation.
-
-> The type `size_t` is a C type in <stddef> header, but it's identical to the
-> C++ version, which resides in the std namespace. Occasionally you will see the 
-> technically correct construction `std::size_t`.
-
-To print sizes use the `%zd` format specifier for decimal, and `%zx` for hexadecimal.
-
-##### sizeof
-The `sizeof` operator method takes a type of operand and returns the size in bytes of that 
-type. The `sizeof` operator always returns a `size_t`. To get the size of an array use `sizeof(arr) / sizeof<type>`.
-
-#### Void 
-The type void has an empty set of values. Because a void object cannot hold a value,
-C++ disallows void objects. You use void in special situations, such as the return type 
-for functions that don't return any value.
-
-### Arrays
-Unlike other programming languages, there is no such thing as an array type. Arrays are 
-just sequences of identically typed variables. When you initialize an array in C++, 
-by specifying either its size or elements, the compiler uses the provided elements to 
-determine the size of the array. In this case, the size is known at compile-time.
-However, when you pass an array to a function, the size information is not passed along 
-with it. The function receives just the pointer to the first element and has no 
-inherent knowledge of the array's size.
-
-Depending on your compiler the following code will provide warnings. As added as a comment
-of the function `getSize`. Note, compiler warnings is not the same as compiler errors.
-```cpp
-void getSize(int arr[]);
-
-int main() {
-  int arr[] = {1, 2, 3, 4, 5};
-  printf("The size of the array is: %zd\n", sizeof(arr) / 4);
-  getSize(arr)
-}
-
-void getSize(int arr[]) {
-  // Sizeof on array function parameter will return size of 'int *' instead of 'int[]'
-  printf("The size of the array is: %zd", sizeof(arr) / 4);
-}
-```
-
-You can iterate through an array several ways:
-```cpp
-// C++
-int arr[] = {1,2,3};
-
-for(int i = 0; i < sizeof(arr) / sizeof(int); i++) printf("%d", num);
-
-for(int num : nums) printf("%d", num);
-```
-
-For certain objects like arrays, `for` understands how to iterate over the range
-of values within an object. Above it the syntax for a ***range-based loop***. If you 
-come from Java, it is the same syntax. Just for the sake of comparison, here is the same
-done in Java.
-
-```java
-// Java
-int[] nums = {1,2,3};
-
-for(int num : nums) System.out.println(num);
-
-for(int i = 0; i < nums.length; i++) System.out.println(nums[i]);
-```
-
-The main difference is that Java does have array types, and that as the array type has 
-a property length, which stores the length of the array. Being types, arrays in Java can 
-be passed around without loosing information. In theory, in Java we could also declare `nums`
-as `int nums[]`, but this is highly discouraged.
-
-### Stings
-C-style strings are contiguous blocks of characters that are terminated via a 0 byte, known 
-as the null char `\0`. String literals in C are immutable, while char arrays are mutable. If you 
-use a string literal, just declare it, and the compiler automatically adds the null character to the 
-end. If you use a char array, you must be mindful to allocate the size of the string + one, the one 
-representing the null character.
-
-The format specifier for narrow strings - strings made up of narrow `char` - is `%s`.
-
-Not recommended for use, but consecutive string literals get concatenated together, and 
-any intervening white space or newlines get ignored:
-```cpp
-char mystr[] = "my "
-             "name "
-             "is "
-             "Mauricio";
-printf("%s", mystr); // my name is Mauricio
-```
-
 ### User Defined Types
 User defined types are types that the user can define. The three broad categories of user 
 defined types are **enums**, **classes**, and **unions**.
@@ -412,7 +152,9 @@ class Dog{
 }
 ```
 
-Constructor declarations don't state a return type, and their name matches the class's name.
+Constructor declarations don't state a return type, and their name matches the class's name. The constructor
+is called automatically when a class is initialized. A user-defined types are ***always initialized*** by
+calling their constructor. This differs from primitive types which are not initialized if declared.
 ```cpp
 class Dog{
 //-- snip --
@@ -421,6 +163,7 @@ class Dog{
     }
 }
 ```
+
 
 The Destructor is a clean up function, with the same name as the constructor but prefixed with 
 the `~`. It runs clean up code when the object is destroyed. Note, the destructor cannot take arguments.
@@ -434,6 +177,11 @@ class Dog{
 ```
 
 ### Initialization
+> Fully Featured Classes (not PODS) are automatically initialized using their default constructors
+> if not explicitly initialized, while primitive types, especially when declared as global 
+> or static variables, are not guaranteed to be initialized automatically, and their initial values are undefined.
+> It's always good practice to initialize all variables explicitly to avoid unexpected behavior.
+
 Hang on, initialization is a mess. There are several ways to initialize types in C++. As a rule 
 of thumb, prefer brace initialization. You can initialize a fundamental type, primitive type, as 
 follows:
@@ -443,6 +191,8 @@ int b{};
 int c = {};
 int d;
 ```
+
+> Braced initialization ***zeroes*** uninitialized variables.
 
 All the above initialize the variable to 0 but `d` which has undefined behavior: avoid initializing a variable like `d`.
 Initializing to an arbitrary value is similar to initialing a fundamental type to zero:
@@ -457,12 +207,40 @@ All the above initialize the variable to `42`. However you should avoid `h`, as 
 might get the ***most vexing parse***. Where a `Type <variable>()` is not interpreted as an 
 initialization but rather a function.
 
-For arrays and Plain data objects you can also use brace initialization. Additionally, 
-brace initialization generates warnings due to ***narrowing conversion***: when the literal 
+Brace initialization generates warnings due to ***narrowing conversion***: when the literal 
 of a variable is truncated to fit the type.
 ```cpp
 int a = 1.2;    // a = 1 
 int b = {1.2};  // Error: double cannot be narrowed to int.
+```
+
+I really like brace initialization for PODS. You initialize the members in order, the members for which
+no value is provided are zeroed.
+```cpp
+struct Person{
+    char name[8];
+    int age;
+}; 
+
+Person a{}; // name = "", age = 0;
+Person b{"Jose"}; // name = "Jose", age = 0;
+Person b{"Jose", 21}; // name = "Jose", age = 21;
+```
+
+##### Member initialization list
+Member initialization lists allow you to initialize `const` members at runtime. As a side benefit
+it also allows you to separate initialization logic with member value assignment. To use member
+initialization list, in the constructor after the parameter list add a `:` and in a comma separated
+list initialize the members inline.
+```cpp
+class Person{
+    string name;
+    int age;
+  public:
+    Person(string name, int age) : name{name}, age{age}{
+        // Initialization Logic
+    }
+}
 ```
 
 ### Reference Types
@@ -509,7 +287,29 @@ int p_itemsInBox(Box* box){
 ```
 Both, `itemsInBox` and `p_itemsInBox` do the same thing, the only difference is in the notation used.
 
-A question might arise, when do I use pointers and when do I use references. 
+Here is a sample Linked List implementation using pointers:
+```cpp
+struct Element {
+  int value;
+  Element *next{};
+};
+
+// -- use --
+
+Element third{3};
+Element second{2, &third};
+Element first{1, &second};
+
+Element* curr = &first;
+
+while(curr){
+    cout << curr->value << endl;
+    curr = curr->next;
+}
+```
+
+In most cases you use pointers when you need to change what you point to or perform pointer arithmetic; else use 
+references.
 
 ##### Arrays and Pointers
 > Pointers share several characteristics with arrays. Pointers encode object location.
@@ -539,7 +339,7 @@ pointer arithmetic is not possible with `void*`.
 especially handy when you consider that the smallest addressable unit of memory is the byte.
 
 ##### nullptr
-`nullptr` is the default value assigned to a pointer when you used brace initialization. It represents 
+***`nullptr` is the default value assigned to a pointer when you used brace initialization.*** It represents 
 a pointer with no value. <mark>Pointers have an implicit conversion to `bool`. Any value
 that is not `nullptr` converts implicitly to `true`, whereas `nullptr` converts implicitly to 
 false</mark>.
@@ -559,3 +359,117 @@ void changeName(&Student s){
 With references, you can only retrieve the value of the referenced object, or set the value of 
 the referenced object. Unlike pointers, you cannot make a reference refer to another object after 
 Initialization.
+
+### Object Lifecycle
+Put simply, objects are `lvalues`: They are a place in storage that holds a value. `rvalues` are not 
+objects as they are not stored in storage but rather in the stack. In general:
+1. Object first is assigned a storage location.
+2. Object is constructed / initialized.
+3. Object is used.
+4. Object is deconstructed.
+5. Object storage is deallocated.
+
+#### Local Variables
+Local variables have automatic storage, meaning, once the end of the scope enclosing the variable is 
+reached, the vairable gets deallocated. This encludes functions, in which the variables within and even 
+the parameters get deallocated when the end of the function is reached.
+
+### Static Storage
+Static storage duration lasts for the entirety of the program. You declare a variable with
+static storage duration using the `static` keyword. The `static` keyword is used in global static
+variables, static members and local static variables. **Global static** variables can be accessed within
+anyplace in the translation unit. **Static Members** can be accessed using the `::` scope resolution operator.
+**Local Static variables** can be accessed only within the local scope.
+```cpp
+// Global Static.
+static int thing = 0;
+// Static Member.
+struct Employee{
+    static int NumberOfEmployees;
+};
+// Local Static.
+void DoSomething(){
+    static int Count;
+}
+```
+It is important to note that, for example, even though we can call `DoSomething` several times, or create 
+multiple instances of `Employee`, there exist only one `Count` and `NumberOfEmployees` respectively.
+The lifetimes of both **Local Static** and **Static Members** begin upon first invocation.
+
+>> All static variables have a **single** instance.
+
+#### Dynamic Memory
+This is the fun part. It might be easy as you might be so used to it, but how does it really work. Dynamic memory, 
+as the name implies is dynamic, you control it. Remember the object lifecycle form above? Basically, 
+memory is assigned to a variable, a variable initializes the memory with some value, the variable is used,
+the variable is destructed, memory is deallocated. For dynamic memory you have to do all this by your self.
+You petition some memory with the `new` operator followed by the type of memory you want. The `new` operator
+returns a pointer to the storage location in the **heap** where your object is stored. After use, you deallocate the 
+object using the `delete` operator and passing the pointer containing the storage location of the object. Note,
+`delete` returns void, while `new` returns a pointer of the type of memory you petitioned.
+```cpp
+// Long way, petitioning size and then setting the value.
+int* a = new int;
+*a = 10;
+// Short way, petitioning size and setting the value at the same time.
+int *a = new int{10};
+// Delete
+delete a;
+```
+Something that might throw you off is what actually does the `new` and `delete` operators do. They might seem simple,
+but people tend to have misconceptions about them. First of all `new` just returns a pointer to a storage of memory you can 
+use. Keep in mind this in no way ensures the memory given is "empty", it can have some values that are no longer in use. Something
+similar is true for the `delete` operator, it just returns that memory to a memory pool, the same from which the pointer you got with 
+`new` came from, and calls the Deconstructor of the type. In no way shape or form does it clean the data, think about this, it would be 
+inefficient.
+```cpp
+int *a = new int;
+cout << *a << endl; // Some random integer.
+delete a;
+cout << *a << endl; // Another, or possibly the same integer.
+```
+In the example above we can see a **dangling pointer**: a pointer that points to a freed memory location. One 
+famous error caused by dangling pointers is the **use after free error**.
+
+#### Dynamic Memory and Arrays
+You can also dynamically allocate arrays, doing so follows a similar process as outlined above. You set
+an array on the heap using `new T[size]`, this returns a pointer to the first element of the array in the heap.
+To delete the array you use the `delete[] array`. Note it is important to distinguish between `delete[]` and 
+`delete`. 
+
+If you are curious as me you might ask, and how does C++ know how many elements to delete with `delete[]`? Here is the 
+answer:
+> When you allocate memory on the heap, your allocator will keep track of how much memory you have allocated.
+> This is usually stored in a "head" segment just before the memory that you get allocated. 
+> That way when it's time to free the memory, the de-allocator knows exactly how much memory to free.
+
+### Exceptions
+Exception handling is achieved thru `throw`, `try`, `catch`. You can throw any object as an error, however it is 
+a good practice to throw an error from the exception library `<stdexcept>`. You catch exceptions within `try` blocks
+in `catch` blocks. The `catch` block specifies the type of exception caught. You can use ellipsis `(...)` to catch
+all exceptions.
+```cpp
+// #include<stdexcept>
+void throw_err(){
+    try{
+        thorw std::runtime_error("I'm going to make you an exception");
+    } catch(int &e){...}
+    catch(std::runtime_error& e){
+        std::cout << e.what() << std::endl;
+    }
+    catch(...){
+        std::cout << "Catching All Exceptions" << std::endl;
+    }
+}
+```
+
+Remember, you can throw any object as an exception. However, you should mostly prefer to 
+throw a `stdlib` exception class as convention. Stdlib classes rely on inheritance where 
+the base class of all `stdlib` exceptions is the `exception` class found. Exceptions are divided
+into three main sub classes: `logic_error`, `runtime_error`, and language support_error. Each of
+these subclasses contain other subclasses.
+- You use `logic_error` to represent when a precondition is not satisfied. 
+- You use `runtime_error` to represent exceptions outside the scope of a program.
+- You usually wont use language support errors as they indicate the failure of a language feature.
+
+> The `exception` class is the base class of all `stdlib` exceptions.
