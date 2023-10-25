@@ -728,7 +728,7 @@ void throw_err(){
 
 Remember, you can throw any object as an exception. However, you should mostly prefer to 
 throw a `stdlib` exception class as convention. Stdlib classes rely on inheritance where 
-the base class of all `stdlib` exceptions is the `exception` class found. Exceptions are divided
+the base class of all `stdlib` exceptions is the `exception` class. Exceptions are divided
 into three main sub classes: `logic_error`, `runtime_error`, and language support_error. Each of
 these subclasses contain other subclasses.
 - You use `logic_error` to represent when a precondition is not satisfied. 
@@ -736,3 +736,85 @@ these subclasses contain other subclasses.
 - You usually wont use language support errors as they indicate the failure of a language feature.
 
 > The `exception` class is the base class of all `stdlib` exceptions.
+
+For functions and methods that cannot throw exceptions, you can use the `noexcept` keyword. This is just a 
+contract that allows the compiler to perform some optimizations, similar to `const`.
+```cpp
+void printHi() noexcept{
+    std::cout << "Hi" << std::endl;
+}
+```
+
+#### In-flight Exception
+When an exception is thrown, it enters in-flight mode, meaning it searches from the nearest exception handler.
+Remember, that the program is run as a stack, where functions are pushed and popped. When an error is thrown, C++
+searches for the nearest exception handler in the stack. This means that if no exception handler is found the current
+stack frame is popped and so on. ***This is an important detail as when a stack frame is popped, all its automatic variables
+are destructed***. Having this in mind one could ask, what happens when your program is in-flight mode and one of your automatic 
+object's destructor throws and error? ***The program calls `std::terminates`*** and ends abruptly. Therefore, treat destructors as
+if they were `noexcept`.
+
+#### Important Bit on Memory Management: RAII / CADRe.
+Resource Aquisition is Instantiation, RAII, and Constructor Acquires Destructor Releases, CADRe, at their core refer to the same 
+basic concept that the ***constructor acquires the resource and the destructor releases the resource***. By following RAII, you 
+take advantage of C++'s deterministic object destruction.
+
+Something I just learned is that when an object is an automatic object and it goes out of scope, it gets destructed, this includes all 
+its members. The object it self is destructed before all its members, and vice-versa the object is constructed after its members have 
+been constructed. OK but what does this entail? This entails that if I have a member allocated in the free store (heap) that follows
+RAII, when the object is destructed the constructor of the member is called and consequently the member is resource is released.
+
+For example:
+```cpp
+struct Dynamic{
+    Dynamic(int num){
+        std::cout << "Allocating Dynamic" << std::endl;
+        iptr = new int{num};
+    }
+    ~Dynamic(){
+        std::cout << "Deallocating Dynamic" << std::endl;
+        delete iptr;
+    }
+    int * iptr;
+};
+
+struct ComposedObject{
+    ComposedObject() : dyn{10}{
+        std::cout << "Constructing Composed" << std::endl;
+    }
+    ~ComposedObject(){
+        std::cout << "Deconstructing Composed" << std::endl;
+    }
+    Dynamic dyn;
+};
+
+int main(){
+    ComposedObject obj;
+}
+// -------------------
+// Allocating Dynamic
+// Constructing Composed
+// Deconstructing Composed
+// Deallocating Dynamic
+```
+In the code above we can see RAII at play, even though `Dynamic` has the `iptr` member on the free store, we can use `Dynamic` and not worry about its 
+`iptr` since it is created and deallocated when the `Dynamic` is allocated and deallocated. We instantiate a `ComposedObject` object which in turn
+instantiates its members, which includes `dyn`. Then as the scope of `main` ends `obj` is deallocated. First we deallocate `obj` and then its members.
+
+From the code, above note the `dyn` is constructed using member initializer list. This is because `dyn` is a class invariant that needs to be satisfied
+before the object is created. Hence, if we created dyn within the constructor and not the initializer, the object would already be created. By using the 
+member initializer list we ensure our class invariants are met. Another way of looking at it is that `dyn = Dynamic(10)` is not initialization but rather
+reassignment, while `dyn(10)` is initialization. Therefore since we have `Dynamic dyn` we are instantiating `dyn` even though it has no default constructor, 
+thing which is not allowed, therefore we need to use member initializer list to properly initialize, not reassign, `dyn`.
+
+> Stack unwinding is only safe with RAII object. Stack unwinding is performed when by the program when it is in in-flight mode.
+
+### Copy Semantics
+Copy semantics refers to how things are copied. The default copy behavior is a member-wise copy, meaning each member is copied
+by value. There exist two types of copies, the copy assignment and the copy initialization, also known as the copy assignment operator and the copy
+constructor. A key aspect, pointed out in the section above, is that ***assignment is not the same as initialization***. 
+```cpp
+// Note that since here we use copy assignment, which is not addressed in Dynamic, we cause a double free.
+Dynamic dyn{10}; // Initialization.
+dyn = Dynamic{20}; // Assignment.
+```
