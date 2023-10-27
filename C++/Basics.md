@@ -818,3 +818,92 @@ constructor. A key aspect, pointed out in the section above, is that ***assignme
 Dynamic dyn{10}; // Initialization.
 dyn = Dynamic{20}; // Assignment.
 ```
+
+Copy semantics come extremely important when considering ***Fully Featured Classes***, meaning classes with constructors, desctructors, methods, not just data.
+This is because, as mentioned above, the default copy behavior is a member-wise copy, meaning you could cause ***double frees, dangling pointers, shared pointers, etc***.
+
+> It is recommended, when defining Fullty Featured Classes that you specify whether you want the default, a custom, or no copy behavior.  
+
+- For no copy behavior set the copy constructor and the copy assignment operator to `delete`.
+- For default copy behavior set the copy constructor and the copy assignment operator to `default`.
+- For custom copy behavior implement your own copy constructor and copy assignment operator. 
+
+```cpp
+struct Thing(){
+    // Delete
+    Thing(const Thing&) = delete;
+    // Default
+    Thing(const Thing&) = default;
+    // Custom
+    Thing(const Thing& other){
+        ...
+    }
+}
+```
+
+For the copy assignment operator, you need to overload the assignment operator. A key difference between the copy assignment and copy constructor, is that when you assign 
+the object is already constructed, hence the class invariants are already established. Consequently, you will need to perform some clean up to release resources to avoid leaks.
+
+```cpp
+struct Thing(){
+    Thing& operator=(const Thing& other){
+        delete dynamic;
+        ...
+    }
+}
+```
+
+### Move Semantics
+Move semantics are a bit tricky. As a good starting point, please do not try to "semantically move" everything. ***Usually move semantics are used to transfer ownership
+of resources form one object to another.*** A keyword is transfer, transferring resources entails that one object is stripped of its resources, ending in what is called the 
+***moved-from state*** . To better understand the terminology, say we have an object `x`, if we transfer the resources of `x` to `y`, `x` ends up in a moved-from state, while `y`
+now contains the resources of `x`. A question arises, ***what should we do with the moved-from object?*** You can do plenty of things since at the end of the day a moved-from 
+object is still of type `Z`.
+
+> An object is not automatically put in a `moved-from state`, you have to do it. This usually entails, cleaning removing the pointers, hence decoupling the object from its resources.
+
+```cpp
+struct Holder {
+  Holder(const char *data, int size) : size{size} {
+    cout << "Creating Holder Via Args" << endl;
+    this->data = new char[size];
+    for (int i = 0; i < size - 1; i++) {
+      this->data[i] = data[i];
+    }
+    this->data[size - 1] = '\0';
+  }
+  Holder() { cout << "Created Holder" << endl; }
+  ~Holder() {
+    cout << "Entering Destructor" << endl;
+    if (!data) {
+      cout << "Deleting" << endl;
+      delete[] data;
+    }
+  }
+  int size;
+  char *data;
+};
+
+struct HolderHolder {
+  HolderHolder() { cout << "Created HolderHolder" << endl; }
+  HolderHolder(Holder &&h) {
+    cout << "Created Holder Via Move" << endl;
+    this->h.data = h.data;
+    this->h.size = h.size;
+    h.size = 0;
+    h.data = nullptr;
+  }
+  Holder h;
+};
+
+int main() {
+  Holder h{"Hello there bb", 15};
+  HolderHolder hh{std::move(h)};
+  if (h.data) {
+    cout << "h data: " << h.data << " size:" << h.size << endl;
+  }
+  cout << "h data: " << "nullptr" << " size:" << h.size << endl;
+  cout << "hh h.data: " << hh.h.data << " size: " << hh.h.size << endl;
+};
+```
+In the code above we use `std::move`, `std::move` casts an `lvalue` to an `rvalue`.
