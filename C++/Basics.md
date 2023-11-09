@@ -863,47 +863,93 @@ object is still of type `Z`.
 > An object is not automatically put in a `moved-from state`, you have to do it. This usually entails, cleaning removing the pointers, hence decoupling the object from its resources.
 
 ```cpp
-struct Holder {
-  Holder(const char *data, int size) : size{size} {
-    cout << "Creating Holder Via Args" << endl;
-    this->data = new char[size];
-    for (int i = 0; i < size - 1; i++) {
-      this->data[i] = data[i];
-    }
-    this->data[size - 1] = '\0';
-  }
-  Holder() { cout << "Created Holder" << endl; }
-  ~Holder() {
-    cout << "Entering Destructor" << endl;
-    if (!data) {
-      cout << "Deleting" << endl;
-      delete[] data;
-    }
-  }
-  int size;
-  char *data;
-};
 
-struct HolderHolder {
-  HolderHolder() { cout << "Created HolderHolder" << endl; }
-  HolderHolder(Holder &&h) {
-    cout << "Created Holder Via Move" << endl;
-    this->h.data = h.data;
-    this->h.size = h.size;
-    h.size = 0;
-    h.data = nullptr;
+#include <iostream>
+#include <utility>
+
+using namespace std;
+
+struct StringHolder {
+  StringHolder(int size, const char *tag) : tag{tag} { m_str = new char[size]; }
+
+  StringHolder(const char *str, const char *tag) : tag{tag} {
+    cout << tag << " = Constructing " << str << endl;
+    int count = 0;
+    while (str[count++] != '\0')
+      ;
+    m_str = new char[count];
+    for (int i = 0; i < count; i++)
+      m_str[i] = str[i];
   }
-  Holder h;
+
+  StringHolder(StringHolder &other, const char *tag) : tag{tag} {
+    cout << tag << " = Copy Constructor of " << endl;
+    other.Print();
+    int count = 0;
+    while (other.m_str[count++] != '\0')
+      ;
+    m_str = new char[count];
+    for (int i = 0; i < count; i++)
+      m_str[i] = other.m_str[i];
+  }
+
+  StringHolder(StringHolder &&other, const char *tag) : tag{tag} {
+    cout << tag << " = Performing a Move of: ";
+    other.Print();
+
+    m_str = other.m_str;
+    other.m_str = nullptr;
+  }
+
+  StringHolder &operator=(StringHolder &other) {
+    cout << tag << " = Copy assignemt of ";
+    other.Print();
+    if (m_str)
+      delete[] m_str;
+    int count = 0;
+    while (other.m_str[count++] != '\0')
+      ;
+    m_str = new char[count];
+    for (int i = 0; i < count; i++)
+      m_str[i] = other.m_str[i];
+    return *this;
+  }
+
+  StringHolder &operator=(StringHolder &&other) {
+    cout << tag << " = Move assignemt of " << endl;
+    other.Print();
+    if (m_str)
+      delete[] m_str;
+    m_str = other.m_str;
+    other.m_str = nullptr;
+    return *this;
+  }
+
+  ~StringHolder() {
+    if (m_str) {
+      cout << tag << " = Desctructing StringHolder: ";
+      Print();
+    } else {
+      cout << tag << " = m_str is a nullptr" << endl;
+    }
+  }
+
+  void Print() {
+    int count = 0;
+    while (m_str[count] != '\0')
+      cout << m_str[count++];
+    cout << endl;
+  }
+
+  char *m_str;
+  const char *tag;
 };
 
 int main() {
-  Holder h{"Hello there bb", 15};
-  HolderHolder hh{std::move(h)};
-  if (h.data) {
-    cout << "h data: " << h.data << " size:" << h.size << endl;
-  }
-  cout << "h data: " << "nullptr" << " size:" << h.size << endl;
-  cout << "hh h.data: " << hh.h.data << " size: " << hh.h.size << endl;
-};
+  StringHolder hola{"Hola", "hola"};
+  StringHolder b{"b", "b"};
+  b = std::move(hola);
+}
 ```
+
 In the code above we use `std::move`, `std::move` casts an `lvalue` to an `rvalue`.
