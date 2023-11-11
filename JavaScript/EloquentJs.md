@@ -112,3 +112,11 @@ of assigning names of items in an array or object container in order so they can
 in the function. To do so, if the parameter is an array `func([p1, p2])`, if the parameter is an 
 object `func({p1, p2})`. This creates bindings for the first and second values of the container named
 `p1` and `p2` respectively.
+
+### Json
+Json is usefull for serializing data, it packages data in a standarized format that can 
+be read by other computers. Javascript provides the `JSON` object, like `Math` it is more like
+a namespace. The `JSON` object provides to main methods.
+- `stringify`: Converts a JavaScript object into a JSON string.
+- `parse`: Converts a JSON stirng into a JavaScript object.
+
