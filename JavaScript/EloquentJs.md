@@ -120,3 +120,12 @@ a namespace. The `JSON` object provides to main methods.
 - `stringify`: Converts a JavaScript object into a JSON string.
 - `parse`: Converts a JSON stirng into a JavaScript object.
 
+### Things to know about arrow functions
+```javascript
+// Both, even though they might look similar are different.
+() => 10    //  10
+() => {10}  // undefined
+```
+When using lambdas, if the first thing after the arrow is an expression, then it is automatically
+returned. If the first thing after the arrow is a statement, block in this case, then you need to return 
+manually the value. Dont think both functions above return 10. 
