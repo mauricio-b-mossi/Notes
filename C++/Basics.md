@@ -1,5 +1,3 @@
-<<<<<<< HEAD
-=======
 ### Introduction to C++
 Hi, in this series I intend to introduce C++. I've found it that the best way 
 to learn a programming language, is by pointing out its distinct and similar features and syntax
@@ -953,3 +951,103 @@ int main() {
 ```
 
 In the code above we use `std::move`, `std::move` casts an `lvalue` to an `rvalue`.
+
+### Polymorphism
+We know how this works, but overall the implementation in C++ has some things you might not expect, 
+interestingly, it is quite similar to C# in terms of syntax.
+
+For Polymorphism you need to construct interfaces, or build class hierarchies, to run some 
+common behavior between instances. You achieve Polymorphism in C++ through, `virtual functions`. 
+***Virtual functions, like in C#, tell the program to run the outer most overriden virtual function
+for the type*** . Like in C#, if you do not use the `virtual` keyword you will just hide the function on 
+the base class.
+```cpp
+struct A{
+    virtual void GetLetter(){
+        cout << "A" << endl;
+    }
+};
+
+struct B : public A{
+    void GetLetter() override {
+        cout << "B" << endl;
+    }
+};
+
+int main(){
+    B b;
+    A& a = b;
+    b.GetLetter(); // B
+    b.GetLetter(); // A
+}
+```
+
+An important thing to note, is that if we did not use the reference `A&`, `A::GetLetter()` would
+have been called. This is because the type is no longer `B` but instead it is upcasted to `A`. Therefore,
+the type is `A` not `B`. Another thing to note, the `override` keyword is optional, however it is good practice
+to add it for its semantics: It conveys more information about the function.
+
+> The most important take away is that `virtual` functions are called from the outer most overriden function of the 
+> type. If the type is held in a Base class, the item is not upcasted if information about the object is not discarded.
+> Therefore, references `Base&` and pointers `Base*` retain information about the underlying type.
+
+***Pure virtual functions*** are a special type of function, by having a pure virtual function you make the class "abstract".
+The class can have data and behavior but cannot be instantiated. To create a pure virtual function you annotate
+a function in the base class with `virtual` and set the value to `=0`:
+```cpp
+struct Letter{
+    virtual void GetLetter() = 0;
+};
+
+struct A : public Letter{
+    virtual void GetLetter() override {
+        cout << "A" << endl;
+    }
+};
+
+struct B : public A{
+    void GetLetter() override {
+        cout << "B" << endl;
+    }
+};
+
+int main(){
+    Letter l; // Error, cannot instantiate function with pure virtual function.
+    B b;
+    A& a = b;
+    b.GetLetter(); // B
+    b.GetLetter(); // A
+}
+```
+
+> Note, virtual functions are more expensive than "normal" functions as they incur runtime overhead,
+> although the cost is typically low. The compiler generates `vtables` that contain function pointers.
+
+Even there are no explicit interfaces in C++ (i,e. the `interface` keyword), pure virtual classes, classes 
+with at least one pure virtual function, are the equivalent. ***Importantly, mark virtual destructors
+to interfaces, else you might leak resources since the desctructor of the interface will be called instead 
+of the destructor of the derived classes***. Even my LSP, alerts me with
+`Delete called on Letter that is abstract but has non-virtual destructor`.
+
+```cpp
+/// using code above
+
+int main(){
+    Letter* l = new B;
+    l->GetLetter();     // B
+    delete l;           // Destructor Letter...
+}
+
+// To fix this suffices
+struct Letter{
+    virtual void GetLetter() = 0;
+    virtual ~Letter(){...}; // or = default; which is more common. Just put virtual ok?
+};
+```
+
+If your going the recommended Object Composition route, instead of Implementation Inheritance, then 
+you have two choices of Polymorphism. 
+- ***Constructor Injection***: Also know as dependency injection, were the object that is composed is passed 
+in the constructor. Use this when you do not need to change the object. Usually done through `references`.
+- ***Property Injection***: Similar to Constructor Injection, the main difference is that you can reassign.
+Usually done through `pointers`.
