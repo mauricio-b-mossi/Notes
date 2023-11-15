@@ -137,6 +137,30 @@ states it perfectly.
 > delegates asynchronous code to the system kernel which once finished adds the callback
 > to the queue.
 
+This part is super important, most representations of Node.js' event loop tend to be wrong. It has multiple,
+steps that can be easily googled. One key fact to know is that ***after each callback is executed,
+before procedding to the next callback in the phase, the event loop checks the microtask queue***. For example,
+```javascript
+// Node.js
+setTimeout(() => {
+    console.log("Inside FIRST setTimeout")
+    process.nextTick(() => console.log("Inside FIRST Next Tick"));
+}, 0)
+
+setTimeout(() => {
+    console.log("Inside SECOND setTimeout")
+    process.nextTick(() => console.log("Inside SECOND Next Tick"));
+}, 0)
+
+// Output:
+// 1. Inside FIRST setTimeout
+// 2. Inside FIRST Next Tick
+// 3. Inside SECOND setTimeout
+// 4. Inside SECOND Next Tick
+```
+[Watch video about Node.js Event loop](https://www.youtube.com/watch?v=PNa9OMajw9w)
+
+
 #### Ending Example
 This example is the reason it all started. I though I new JavaScript decently well after using it to build
 scripts, frontends, backends, mobile apps, but I was wrong. I never truly understood it, therefore this code 
