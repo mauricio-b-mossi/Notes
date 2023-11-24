@@ -2,6 +2,11 @@
 
 Use [mdn web docs](https://developer.mozilla.org/en-US/docs/Web/JavaScript) as your
 guide for everything JavaScript.
+
+> The most important thing to remember, is that after each callback in the macrotask queue
+> is executed, before moving to the next callback in the current macrotask phase, if the phase 
+> pushed callbacks to the microtask queue, those will be executed until they are exhausted.
+
 ___
 ### Up to Speed with JavaScript
 Here is mostly everything you need to know before hopping back into the weird 
@@ -141,25 +146,50 @@ This part is super important, most representations of Node.js' event loop tend t
 steps that can be easily googled. One key fact to know is that ***after each callback is executed,
 before procedding to the next callback in the phase, the event loop checks the microtask queue***. For example,
 ```javascript
-// Node.js
-setTimeout(() => {
-    console.log("Inside FIRST setTimeout")
-    process.nextTick(() => console.log("Inside FIRST Next Tick"));
-}, 0)
+console.log("Start")
 
+new Promise((res, _) => {
+    // This is not async, will be printed after "Start"
+    console.log("Promise to be resolved")
+    res("Resolved")
+}).then((res) => console.log("Promise has been ", res))
+
+
+// This will be exhausted before movind to "First Timeout."
 setTimeout(() => {
-    console.log("Inside SECOND setTimeout")
-    process.nextTick(() => console.log("Inside SECOND Next Tick"));
-}, 0)
+    console.log("Second Timeout w/NT")
+    process.nextTick(() => {
+        console.log("Inside the first NT")
+        process.nextTick(() => {
+            console.log("Within the second NT")
+            process.nextTick(() => {
+                console.log("Within the third NT")
+            })
+        })
+    })
+})
+
+setTimeout(() => console.log("First Timeout"))
+
+
+console.log("End")
 
 // Output:
-// 1. Inside FIRST setTimeout
-// 2. Inside FIRST Next Tick
-// 3. Inside SECOND setTimeout
-// 4. Inside SECOND Next Tick
+// - Start
+// - Promise to be resolved
+// - End
+// - Promise has been  Resolved
+// - Second Timeout w/NT
+// - Inside the first NT
+// - Within the second NT
+// - Within the third NT
+// - First Timeout
 ```
 [Watch video about Node.js Event loop](https://www.youtube.com/watch?v=PNa9OMajw9w)
 
+> The most important thing to remember, is that after each callback in the macrotask queue
+> is executed, before moving to the next callback in the current macrotask phase, if the phase 
+> pushed callbacks to the microtask queue, those will be executed until they are exhausted.
 
 #### Ending Example
 This example is the reason it all started. I though I new JavaScript decently well after using it to build
