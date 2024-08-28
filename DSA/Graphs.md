@@ -52,15 +52,15 @@ Another way to arrive at the same result is:
 Therefore we can conclude that any simple undirected graph is upper bounded by `2|E| <= v^2-v`.
 
 ### Representations of graphs
-- `Edge List`: A list of all the edges in a graph. 
+- **Edge List**: A list of all the edges in a graph. 
     - Space `O(e)`: Stores all edges in a list.
     - `get_adj(v)` `O(e)`: Scans list and returns all edges containing v.
     - `is_edge(x, y)` `O(e)`: Scans list and checks whether `{x, y}` exists.
-- `Adjacency List`: A hash table of vertices to lists of their adjacent vertices.
+- **Adjacency List**: A hash table of vertices to lists of their adjacent vertices.
     - Space `O(v*max(deg(v)))`: Allocates a hash table of size `v` pointing to lists of size `deg(v)`.
     - `get_adj(v)` `O(1)`: Returns list at slot `v`.
     - `is_edge(x, y)` `O(deg(x))`: Scans list of slot `v` and checks whether `y` is in the list.
-- `Adjacency Matrix`: A `v*v` boolean matrix containing a `1` if edge `AdjMat[x][y]` exists.
+- **Adjacency Matrix** A `v*v` boolean matrix containing a `1` if edge `AdjMat[x][y]` exists.
     - Space `O(v^2)`: Allocates a `v*v` array.
     - `get_adj(v)` `O(v)`: Scans row `AdjMax[v][:]` and returns all `y` if `AdjMax[v][y] == 1`.
     - `is_edge(x, y)` `O(1)`: returns `AdjMax[x][y]`.
@@ -77,7 +77,7 @@ Some of the common computations performed in graphs are:
 
 The beauty is that by computing the **single source shortest path**, *sssp from now on*, of `A` we have the answer of connectivity, and shortest
 path for all nodes with respect to `A`. Here is how:
-- *sssp* will perform a level order traversal of the graph and return a `dict<key = vertex, value = tuple<`dist`, `prev`>>`.
+- *sssp* will perform a level order traversal of the graph and return a `dict<key = vertex, value = tuple<dist, prev>>`.
 ```
 q = [x0]
 dict[x0] = (0, None)
