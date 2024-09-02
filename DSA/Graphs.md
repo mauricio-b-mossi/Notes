@@ -47,7 +47,7 @@ have `(v - 1)` edges. Therefore the total number of edges would be:
 Another way to arrive at the same result is:
 1. If our graph is complete, it contains all possible edges.
 2. An edge is a set, if undirected, of two vertices.
-3. (|v| choose 2) produces all ways to choose two vertices, and therefore all edges. Again, if directed multiply by 2.
+3. `(|v| choose 2)` produces all ways to choose two vertices, and therefore all edges. Again, if directed multiply by 2.
 
 Therefore we can conclude that any simple undirected graph is upper bounded by `2|E| <= v^2-v`.
 
@@ -56,7 +56,7 @@ Therefore we can conclude that any simple undirected graph is upper bounded by `
     - Space `O(e)`: Stores all edges in a list.
     - `get_adj(v)` `O(e)`: Scans list and returns all edges containing v.
     - `is_edge(x, y)` `O(e)`: Scans list and checks whether `{x, y}` exists.
-- **Adjacency List**: A hash table of vertices to lists of their adjacent vertices.
+- **Adjacency List**: A hash table of vertices to lists of their adjacent vertices. Or each vertex could store its adjacent vertices: `v.adj`.
     - Space `O(v*max(deg(v)))`: Allocates a hash table of size `v` pointing to lists of size `deg(v)`.
     - `get_adj(v)` `O(1)`: Returns list at slot `v`.
     - `is_edge(x, y)` `O(deg(x))`: Scans list of slot `v` and checks whether `y` is in the list.
@@ -74,6 +74,7 @@ Some of the common computations performed in graphs are:
 - **Connectivity**: Is there a walk from vertex `A` to `B`?
 - **Shortest Path**: What is the shortest path from `A` to `B`?
 - **Single Source Shortest Path**: What is the shortest path from vertex `A` to all vertices?
+- **Cycle Detection**: Is there a cycle in the Graph?
 
 The beauty is that by computing the **single source shortest path**, *sssp from now on*, of `A` we have the answer of connectivity, and shortest
 path for all nodes with respect to `A`. Here is how:
@@ -97,3 +98,53 @@ Therefore the time complexity for the algorithm above is `O(|v| + |e|)`.
 
 From the return type of *sssp* to check for connectedness we check whether the vertex `v` is in the `dict`.
 To reconstruct the shortest path form `v` to `source`, we query `dict[v.prev]` recursively until we arrive at `source`.
+
+The algorithm above performs a Breadth First Search (BFS), in which all the vertices at distance `n` are visited
+before all vertices at distance `n + 1` from the root. *BSF* is particularly useful at finding the shortest path due to the invariant stated above.
+
+Here is the algorithm for BFS:
+- Initialization: Initialize a queue with an arbitrary vertex `x` and a `dict[vertex] = 0`. The dict tracks distances, while the queue tracks which items are next in the traversal.
+- Modify: While the queue is not empty, dequeue item `x` from the queue and iterate over neighbors.
+    - If neighbor `n` not in dict, insert `dict[n] = dict[`x`] + 1`, setting its distance to the `parent + 1`, and enqueue vertex as it has not been visited.
+    - If neighbor `n` in dict continue.
+- Terminate: When queue is empty meaning no unvisited items where present in this level set.
+
+Now, if we want to find **cycles** we use full DFS. DFS visits all reachable nodes from the starting vertex.
+Here is the algorithm for DFS:
+- Initialize: Loop over all vertices.
+    - If vertex has not been marked, mark `in progress` and visit its children.
+    - If vertex is marked `in progress` it means recursion has not unravelled, since when we unravelled we mark vertex as `finished`, and therefore there exists a cycle, return cycle.
+    - If vertex is marked `finished` we return since it means a DFS form that vertex has already been performed.
+- Modify:
+    - If children have been visited, mark `finished` and return.
+- Termination:
+    - When all vertices have been visited.
+    - When cycle is found.
+
+An analogy of how DFS works to detect cycles is like walking through a maze. If you walk a maze without breadcrumbs and you got a bad memory you will get lost easily. On 
+the other hand if you leave breadcrumbs, and find your breadcrumbs again, my friend you have just found a cycle.
+
+### DAGS, Finishing Order, Topological Sort, and Cycles
+Direct acyclic graphs, or DAGS for short, are directed graphs with no cycles. For example if a tree has directed edges, well it is a DAG. DAGs
+are used to represent dependency trees, note the word tree, courses and prerequisites, etc. *If and only if we have a DAG we can perform topological sort.*
+Topological sort is an ordering that requires that if there exists a path from `(u, v)` then `u` must appear before `v` in the sort.
+It is useful to think about dependencies. In a topological sort all dependencies of a vertex are before the vertex itself. A common 
+example of a topological sort problem are courses and their prerequirements. To take a course you first need to take 
+its prerequirement, therefore, the prerequirement is a dependency for the course. A proper ordering of courses would be 
+one that allows to take all courses, by first taking all the prerequirements. It is really easy to understand this procedure
+and problem with `Kahn's algorithm`.
+
+Khan algorithms states that we should iterate over all vertices and check if their `in_deg(v) == 0`.
+- If the `in_deg(v) == 0` it means course `v` does not depend on others, therefore you can take course `v`.
+    - Since we can take course `v` it means we can take all the courses that require `v`. Therefore remove, the 
+    edges pointing from `v` to `x` therefore decreasing `in_deg(x)` by 1. Then we remove `v` from iterable
+    since its requirement was already satisfied.
+- We stop when there are no more vertices with `in_deg(v) == 0` in iterable. If there remain vertices in the iterable, then a cycle exists in the graph.
+
+> Note even though we perform full DFS to check for cycles, we just need to prove it for one weakly connected component.  
+
+Reverse finishing order sort produces a valid topological sort. Finishing order sort appends a vertex to a list as it backtracks in its DFS.
+Proof:
+- Case 1: `there exists (u, v)`. If there exists `(u, v)` and I start at `u`, then `v` will finish and therefore backtrack before `u`.
+- Case 2: `there does not exist (u, v)`. If there does not exist `(u, v)` then `u` will finish before `v`. Since `v` is not in the path
+    of `u`. It is either in a different connected component, or an ancestor of `u`.
