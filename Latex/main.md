@@ -13,7 +13,7 @@ exists like mini preambles for some sections in your document, like `\begin{tabl
 
 - To invoke math you can either use `$..$`, `$\displaystyle{..}$`, `$$...$$`, or `\[\]`. 
     - `$...$` is for inline expressions, for example `$e^{i\theta} = \cos(\theta) + i\sin(\theta)$`.
-    - `$\displaystyle{...}$` is for inline expressions where you want symbols to span the full height, for example `$displaystyle{\int_{1}^{2}x^2}$`.
+    - `$\displaystyle{...}$` is for inline expressions where you want symbols to span the full height, for example `$displaystyle{\int \limits_{1}^{2} x^2}$`.
     - `$$...$$` is for multi line, block, expressions, for example `$$\sum_{n = 0}^{\infty}\frac{1}{n}$$`.
     - `\[\]` serves the same purpose as `$$...$$` but is considered outdated.
 Some expressions like summations need to be display block `($$$$)`, reference from HTML, to be displayed properly. This
