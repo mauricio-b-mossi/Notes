@@ -4,7 +4,10 @@ Latex is pretty easy and intuitive. Here are the important parts.
 
 - For most thing to work, `\usepackage{amsfonts, amssymb, amsmath}`. Fonts allows you to use Z, R, etc. Math is for arrays (not those arrays).
 
-- The preamble is everything before `\begin{document}`. Here you configure packages, dates, title, etc.
+- The preamble is everything before `\begin{document}`. Here you configure packages, dates, title, etc. There
+exists like mini preambles for some sections in your document, like `\begin{table}`.
+
+- Useful commands, `\vspace{*cm}`, `\pagebreak`.
 
 - Unlike text-mode, in math-mode spaces are **ignored**.
 
@@ -22,6 +25,35 @@ are crammed upwards inline. Bottom line, for big or large expressions make the e
 Use `\\` to break to the next line. **This is important, use `\\` to break lines, you will use this in tables**
 
 - Paragraphs are automatically indented, only for the first line.
+
+## White Space
+### Horizontal
+Inside math-mode, LaTex ignores spaces. To include spaces use `\ `. This equals one space.
+- `\quad`: 1em.
+- `qquad`: 2em.
+- `\hspace{<measurement>}`: Adds space according to measurement.
+- `\hfill`: Fills the space between two segments. Think of it as `flex, space-between`.
+
+### Vertical
+- `\vspace{<measurement}`: Adds vertical space according to measurement.
+- `\vfill`: Fills the space two segments of the same page. Think of `flex-col space-between`.
+
+## New lines, Paragraphs, and indentation
+LaTex considers two segments separated by one or more white lines in between as two paragraphs. For line breaks
+use `\\`, for example:
+```
+This is the first paragraph.
+This is the second.
+
+This is the first paragraph.\\
+This is the second.
+```
+The first segment won't work as you would expect, both segments would be joined by the compiler. 
+
+Independent of how many white spaces in between two segments, by default LaTex will consider them as two paragraphs with 
+one space in between. To add custom sizing you could use `\vspace{<measurement}`.
+
+New paragraphs by default are indented, to remove this, use `\noindent` at the begining of the paragraph.
 
 ## Basic Mathematical Notation
 ### Subscripts and superscripts
@@ -97,3 +129,51 @@ x &= \sqrt{1 - y^2}
 \end{align}
 ```
 The ampersands `(&)` are really important as they align all the `=`. If you do not want to align equal signs, skip this step.
+
+## Lists
+To create a list, you must open a list section with `\begin{enumerate}`. Separate each list item with `\item`.
+If you want your list to be bulleted use `\begin{itemize}`, for example,
+```
+\begin{enumerate}
+\item 2 eggs
+\item $\frac{1}{2}$oz chopped onion.
+\item $\frac{1}{4}$oz chopped green pepper.
+\end{enumerate}
+```
+Note, `\item[?]` accepts an, optional, parameter to override the default sequence. If empty removes marker.
+
+You can also nest lists by adding new list sections. The enumeration will be numeric, alphabetic, roman numerals. There are 
+several options to configure, for example `\setcounter{*}` to start the counter from a given value. You 
+can also change which type of enumeration you start with, alphabetic, roman numerals, etc.
+
+## Text, Fonts, and Justify
+### Text
+- *italics*: `\textit{italics}`.
+- **bold face**: `\textbf{bold face}`.
+- SMALL CAPS: `\textsc{small caps}`.
+- typewriter: `\texttt{similar to monospaced}`.
+
+### Font size block
+By surrounding a section in `\begin{<size>}`, you can change the size of the font for that section. In order of smallest to largest:
+`tiny`, `scriptsize`, `small`, `normalsize`, `large`, `Large`, `huge`, `Huge`.
+
+### Justify
+To justify content along the main axis, wrap in `\begin{<justify>}}`, where justify can be: `flushleft`, `flushright`, `center`.
+
+### Side Effects
+Commands such as the sizing, justify, etc. are applied locally to a section by `\begin{}`. However,
+you can apply them to everything that follows by applying them to the current section. Avoid these if possible.
+
+## Document Formatting
+### Title
+The title includes, `\title{}`, `\author{}`, `\date{\today}`. Input the information, and inside `\begin{document}` call `\maketitle`.
+Note, `\today` is a convenience to add today's date.
+
+### Sections, subsections, subsubsections
+Use `\section{}`, and the others, to create a section. This sections are nested based on name. By default
+they are numbered and are used to generate the table of contents. To remove numbering, use `\section*{}`.
+
+### Table of Contents
+The table of contents is generated based on sections. Within document, `\begin{document}`, place
+`\tableofcontents`. Note positioning matters, if before `\maketitle`, then the table of contents will
+appear before, the converse is true.
